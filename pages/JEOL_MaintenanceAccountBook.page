@@ -1,0 +1,375 @@
+<apex:page standardcontroller="MaintenanceContractManagement__c" extensions="JEOL_MaintenanceAccountBookCtrl" id="allpage">
+
+  <apex:stylesheet value="{!URLFOR($Resource.SearchBaseCss)}" />
+  <apex:stylesheet value="{!URLFOR($Resource.JQueryUI, 'JQueryUI/jquery-ui.min.css')}" />
+  <apex:includeScript value="{!URLFOR($Resource.JQuery)}" />
+ 
+  <style>
+
+.customButton {  
+  background: none;
+  background-color: #ffffff;
+  display: block;
+  margin: 0 auto;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  padding: 4px 4px;
+  border: 1px solid #7e9bc1;
+  color: #2f4159;
+  cursor: pointer;
+  border-radius: 4px;
+  text-decoration: none;
+  text-align: center;
+  box-shadow: none;
+  transition: box-shadow 0.1s linear 0s, background-color 0.1s linear 0s, border-color 0.1s linear 0s;
+  height: 30px;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  font-weight: normal;
+  float: left;
+  line-height: 30px;
+}
+.customButton:hover {
+  background: none;
+  background-color: #f2f5f8;
+  border-color: #00ABFF;
+  text-decoration: none;
+  box-shadow: 0px 1px 5px rgba(0,171,255,0.25);
+  position: relative;
+}
+.customButton:focus {
+  background: none;
+  box-shadow: 0px 1px 5px rgba(0,171,255,0.25);
+  border-color: #00ABFF;
+  background-color: #f2f5f8;
+  position: relative;
+}
+.customButton:active {  
+  transition: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.20) inset;
+  background-color: #e5ebf2;
+}
+
+#searchPanel2 {
+    width: 994px;
+    background-color: #9ccada;
+}
+#search_criteria2 {
+    width: 100%;
+    background-color: #dfeaeb;
+    font-size: 13px;
+}
+#buttons {
+    margin: 0 0 0 0;
+}
+    .input{
+        font-size:14px;
+        font-family:;
+        border: 1px solid #989c9d;
+        border-radius:5px;
+        padding: 3px 5px;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+        width: 120px;
+    }
+
+    .jeol_wait_panel {
+        left: auto !important;
+    }
+    .record-list {
+        margin-left: 0px;
+    }
+    #searchPanel {
+      margin-left: 0px;
+    }
+    .screenname {
+      margin-left: 0px;
+      height: 40px;
+    }
+    .fakeContainer {
+        width:1013px;
+    }
+    
+    .koumoku th,
+    .contents td {
+        text-align: center;
+    }
+    
+    .clm00 { width: 40px;}
+    .clm01 { width: 65px;}
+    .clm02 { width: 40px;}
+    .clm03 { width: 65px;}
+    .clm04 { width: 40px;} 
+    .clm05 { width: 100px;}
+    .clm06 { width: 100px;} 
+    .clm07 { width: 100px;} 
+    .clm08 { width: 100px;}
+    .clm09 { width: 1px;}
+    .clm10 { width: 1px;}
+
+    .searchresulttable {
+      width: 100%;
+      border: 0;
+      margin: 0;
+      padding: 0;
+    }    
+
+    .searchresulttable td{
+      border: 0;
+      margin: 0;
+      padding: 0 !important;
+    }    
+
+    .button_white {
+        font-size: 14px;
+        font-weight: bold;
+        padding: 4px 10px;
+        border: 1px solid #aebdbf;
+        background-color: #ffffff;
+        background-image: -webkit-linear-gradient(top, #ffffff, #dce0e1);
+        background-image: linear-gradient(to bottom, #ffffff, #dce0e1);
+        text-decoration: none;
+        /* border-radius: 4px; */
+        color: #000000;
+        line-height: 50px;
+        -webkit-transition: none;
+        transition: none;
+        margin: 0px 5px;
+    }
+    
+    .pbTitle {
+        width: 0 !important;
+        padding: 0 !important;
+    }
+
+    .amountField {
+        font-weight: bold;
+        font-size: 20px;
+        color: #2e3396;      
+    }
+  </style>
+
+  <script>
+      var $j = jQuery.noConflict();
+
+      $j(function(){
+          calculateScreen();
+      });
+
+      var transform2ByteNumericBase = '０１２３４５６７８９';
+      function transformCurrencyToInteger(value) {
+
+          value = String(value);
+          if ((!value && value !== 0) || !value.match(/^-?(?!,)[0-9０-９,]*(\.?(?=[0-9０-９]+)[0-9０-９]+)$/g)) {
+              value = '0';
+          } else {
+              value = value.replace(/[０-９]/g,function(s){return transform2ByteNumericBase.indexOf(s);});
+          }
+          value = parseFloat(value.replace(/,/g,''));
+          value = Math.floor(value*1000)/1000;
+          return value;
+      }
+
+      function calculateScreen() {
+
+          var totalReduction = transformCurrencyToInteger($j('.amountSalesReturn').val());
+
+          var $reductionForms = $j('.amountEstimate');
+          for (var i = 0; i < $reductionForms.length; i++) {
+              var $reduction = $j($reductionForms[i]);
+
+              var reductionValue = transformCurrencyToInteger($reduction.val());
+              if (reductionValue) {
+                  totalReduction += reductionValue;
+              }
+          }
+
+          var $reductionFormsText = $j('.amountEstimateText').children();
+
+          for (var i = 0; i < $reductionFormsText.length; i++) {
+
+
+              var $reduction = $j($reductionFormsText[i]);
+
+              var reductionValue = transformCurrencyToInteger($reduction.text().length > 4 ? $reduction.text().substring(4) : $reduction.text());
+
+              if (reductionValue) {
+                  totalReduction += reductionValue;
+              }
+          }
+
+          $j('.CurrentAccountBookAmount').text('JPY ' + currencyFormat(totalReduction));
+
+      }
+
+      function currencyFormat(value) {
+          if (!value && value !== 0) {
+              value = 0;
+          }
+          var valueParts = String(value).split(".");
+          valueParts[0] = valueParts[0].replace(/(\d)(?=(\d{3})+(?!\d))/g,"$1,");
+          return valueParts.join('.');
+      }
+
+  </script>
+
+
+  <apex:form id="allform" style="width: 994px; margin-left: auto; margin-right: auto;">
+    <c:JEOL_WaitSearchPanel text="Processing..."/>
+    <apex:variable value="{!$ObjectType.MaintenanceAccountBook__c.Fields}" var="fields" />
+    <div class="screenname">
+      <img src="{!URLFOR($Resource.Images, 'images/icons/title_icon_orderplan.png')}" align="left" width="40px" />
+      <span id="title">{!IF(sType == '4', $Label.JEOL_MaintAccBook_Label_AccountBookHelium, IF(sType == '3', $Label.JEOL_MaintAccBook_Label_AccountBookAttach, IF(sType == '2', $Label.JEOL_MaintAccBook_Label_AccountBookNoInspec, $Label.JEOL_MaintAccBook_Label_AccountBook)))}</span>
+    </div>
+    
+    <apex:outputPanel layout="block" id="mainSection" styleclass="searchresult">
+
+        <apex:inputHidden value="{!dAmountCurrentAccountBookSalesReturn}" html-class="amountSalesReturn" />
+       
+        <apex:pageBlock >
+        
+            <apex:pageBlockButtons >
+
+                <apex:commandLink value="{!$Label.JEOL_MaintAccBook_Label_AddTopRow}" styleClass="button_white" action="{!addFirstRow}" rerender="mainSection" onclick="showWaitPanel();" oncomplete="calculateScreen();hideWaitPanel();" />
+                <apex:commandLink value="{!$Label.JEOL_MaintAccBook_Label_AddBottomRow}" styleClass="button_white" action="{!addLastRow}" rerender="mainSection" onclick="showWaitPanel();" oncomplete="calculateScreen();hideWaitPanel();" style="margin-right: 30px;" />
+    
+                <apex:commandLink value="{!$Label.JEOL_MaintAccBook_Label_RemoveFirstRow}" styleClass="button_white" action="{!removeFirstRow}" rerender="mainSection" onclick="showWaitPanel();" oncomplete="calculateScreen();hideWaitPanel();" />
+                <apex:commandLink value="{!$Label.JEOL_MaintAccBook_Label_RemoveLastRow}" styleClass="button_white" action="{!removeLastRow}" rerender="mainSection" onclick="showWaitPanel();" oncomplete="calculateScreen();hideWaitPanel();" style="margin-right: 30px;" />
+    
+                <apex:commandLink value="自動按分" styleClass="button_white" action="{!doProportionalAmount}" rerender="mainSection" onclick="showWaitPanel();" oncomplete="calculateScreen();hideWaitPanel();" rendered="{!(sType == '2' || sType == '4')}"/>
+                <apex:commandLink value="{!$Label.JEOL_MaintAccBook_Label_CopyLastYear}" styleClass="button_white" action="{!importPreviousYearData}" rerender="mainSection" onclick="showWaitPanel();" oncomplete="calculateScreen();hideWaitPanel();" style="margin-right: 30px;" />
+    
+                <apex:commandLink value="{!$Label.JEOL_MaintAccBook_Label_Save}" styleClass="button_white" action="{!save}" rerender="mainSection" onclick="showWaitPanel();" oncomplete="calculateScreen();hideWaitPanel();" />
+                <apex:commandLink value="{!$Label.JEOL_MaintAccBook_Label_Cancel}" styleClass="button_white" action="{!cancel}" rerender="mainSection" onclick="showWaitPanel();" oncomplete="calculateScreen();hideWaitPanel();" />
+    
+            </apex:pageBlockButtons>
+
+      <apex:pageMessages id="pageMessages" /> 
+
+            <apex:pageBlockSection columns="2">
+                <apex:inputField value="{!so.SubAmountHontaiNoInspec__c}" rendered="{!sType == '2'}"/>
+                <apex:inputField value="{!so.SubAmountHelium__c}" rendered="{!sType == '4'}"/>
+                <apex:pageBlockSectionItem rendered="{!(sType != '2' && sType != '4')}"/>
+
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrContractAmountt__c.label}" />
+                    <apex:outputText value="{0,number, JPY ###,###,###,###,###,###}" >
+                      <apex:param value="{!so.NewOdrContractAmountt__c}" />
+                    </apex:outputText>
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem rendered="{!dAmountOtherAccountBook != NULL && dAmountOtherAccountBook != 0}"/>
+                <apex:pageBlockSectionItem rendered="{!dAmountOtherAccountBook != NULL && dAmountOtherAccountBook != 0}">
+                    <apex:outputLabel value="残金額（他台帳抜き）" />
+                    <apex:outputText value="{0,number, JPY ###,###,###,###,###,###}" >
+                      <apex:param value="{!so.NewOdrContractAmountt__c - dAmountOtherAccountBook}" />
+                    </apex:outputText>
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="金額（現台帳）" />
+                    <apex:outputText value="" styleClass="CurrentAccountBookAmount" />
+                </apex:pageBlockSectionItem>
+
+
+
+<!--
+                <apex:pageBlockSectionItem />
+
+                <apex:pageBlockSectionItem  dataStyle="text-align: right;" >
+
+                  <apex:outputPanel style="text-align: right;">
+                    <apex:outputText value="保守契約金額" />
+
+                    <apex:outputText styleClass="amountField" value="{0,number, ###,###,###,###,###,###}" >
+                      <apex:param value="{!dAmountTotal}" />
+                    </apex:outputText>
+
+                    <apex:outputText value="金額（他台帳）" />
+
+                    <apex:outputText styleClass="amountField" value="{0,number, ###,###,###,###,###,###}" >
+                      <apex:param value="{!dAmountOtherAccountBook}" />
+                    </apex:outputText>
+
+                    <apex:outputText value="金額（現台帳）" />
+
+                    <apex:outputText styleClass="amountField" value="{0,number, ###,###,###,###,###,###}" >
+                      <apex:param value="{!dAmountCurrentAccountBook}" />
+                    </apex:outputText>
+
+                  </apex:outputPanel>
+
+                </apex:pageBlockSectionItem>
+-->
+
+                <apex:pageBlockSectionItem />
+            </apex:pageBlockSection>
+
+        
+            <apex:pageBlockTable value="{!lsAccountBookRow}" var="accountBookRow" >
+                <apex:column headerValue="{!$ObjectType.MaintenanceAccountBook__c.fields.Name.Label}">
+                    <apex:outputText value="{!accountBookRow.Name}" style="{!IF(accountBookRow.SalesReturn__c, 'color: red;', '')}"/>
+                </apex:column>
+                <!--
+                <apex:column headerValue="{!$ObjectType.MaintenanceAccountBook__c.fields.SalesReturn__c.Label}">
+                    <apex:outputField value="{!accountBookRow.SalesReturn__c}"/>
+                </apex:column>
+                -->
+                <apex:column rendered="{!sType != '2'}" headerValue="{!$ObjectType.MaintenanceAccountBook__c.fields.Inspection__c.Label}">
+                    <apex:inputfield rendered="{!!accountBookRow.SalesReturn__c}" value="{!accountBookRow.Inspection__c}"/>
+                </apex:column>
+                <apex:column rendered="{!sType != '2'}" headerValue="{!$ObjectType.MaintenanceAccountBook__c.fields.InspectionDone__c.Label}">
+                    <apex:inputfield rendered="{!!accountBookRow.SalesReturn__c}" value="{!accountBookRow.InspectionDone__c}"/>
+                </apex:column>  
+                <apex:column headerValue="{!$ObjectType.MaintenanceAccountBook__c.fields.SalesAmountEstimate__c.Label}">
+                    <apex:inputfield rendered="{!!accountBookRow.SalesReturn__c && (!accountBookRow.AlreadyBilled__c && sType != '2' && sType != '4')}" value="{!accountBookRow.SalesAmountEstimate__c}" styleclass="amountEstimate" onchange="calculateScreen();"/>
+                    <apex:outputPanel rendered="{!!accountBookRow.SalesReturn__c && (accountBookRow.AlreadyBilled__c || sType == '2' || sType == '4')}" styleClass="amountEstimateText">
+                        <apex:outputfield value="{!accountBookRow.SalesAmountEstimate__c}" />
+                    </apex:outputPanel>
+                </apex:column>
+                <apex:column headerValue="{!$ObjectType.MaintenanceAccountBook__c.fields.SalesAmountReal__c.Label}">
+                    <span style="{!IF(accountBookRow.SalesReturn__c, 'color: red;', '')}">
+                        <apex:outputfield value="{!accountBookRow.SalesAmountReal__c}" />
+                    </span>
+                </apex:column>
+                <apex:column headerValue="{!$ObjectType.MaintenanceAccountBook__c.fields.BillingAmountEstimate__c.Label}">
+                    <apex:inputfield rendered="{!!accountBookRow.SalesReturn__c}" value="{!accountBookRow.BillingAmountEstimate__c}"/>
+                </apex:column>
+                <apex:column headerValue="{!$ObjectType.MaintenanceAccountBook__c.fields.BillingDone__c.Label}">
+                    <apex:inputfield rendered="{!!accountBookRow.SalesReturn__c}" value="{!accountBookRow.BillingDone__c}"/>
+                </apex:column>                
+                <apex:column headerValue="{!$ObjectType.MaintenanceAccountBook__c.fields.InvoiceNumber__c.Label}">
+                    <apex:inputfield rendered="{!!accountBookRow.SalesReturn__c}" value="{!accountBookRow.InvoiceNumber__c}"/>
+               </apex:column>                
+                <apex:column headerValue="{!$ObjectType.MaintenanceAccountBook__c.fields.InvoiceNumberAuto__c.Label}">
+                    <apex:inputfield rendered="{!!accountBookRow.SalesReturn__c}" value="{!accountBookRow.InvoiceNumberAuto__c}"/>
+               </apex:column>                
+
+                <apex:column headerValue="{!$ObjectType.MaintenanceAccountBook__c.fields.SalesAuto__c.Label}" rendered="false">
+                    <apex:inputfield rendered="{!!accountBookRow.SalesReturn__c && !accountBookRow.AlreadyBilled__c}" value="{!accountBookRow.SalesAuto__c}"/>
+                    <apex:outputfield rendered="{!!accountBookRow.SalesReturn__c && accountBookRow.AlreadyBilled__c}" value="{!accountBookRow.SalesAuto__c}"/>
+                </apex:column>                
+                <apex:column headerValue="{!$ObjectType.MaintenanceAccountBook__c.fields.TaxCode__c.Label}">
+                    <apex:inputfield rendered="{!!accountBookRow.SalesReturn__c && !accountBookRow.AlreadyBilled__c}" value="{!accountBookRow.TaxCode__c}"/>
+                    <apex:outputfield rendered="{!!accountBookRow.SalesReturn__c && accountBookRow.AlreadyBilled__c}" value="{!accountBookRow.TaxCode__c}"/>
+                </apex:column>                
+                <apex:column headerValue="{!$ObjectType.MaintenanceAccountBook__c.fields.ItemName__c.Label}">
+                    <apex:inputfield rendered="{!!accountBookRow.SalesReturn__c && !accountBookRow.AlreadyBilled__c}" value="{!accountBookRow.ItemName__c}"/>
+                    <apex:outputfield rendered="{!!accountBookRow.SalesReturn__c && accountBookRow.AlreadyBilled__c}" value="{!accountBookRow.ItemName__c}"/>
+                </apex:column>                
+            </apex:pageBlockTable>
+
+            <apex:pageBlockSection columns="1">
+                <apex:pageBlockSectionItem />
+                <apex:inputField value="{!so.BillingMethodHontai__c}" style="width: 600px;" rendered="{!sType != '4'}"/>
+                <apex:inputField value="{!so.BillingMethodHelium__c}" style="width: 600px;" rendered="{!sType == '4'}"/>
+            </apex:pageBlockSection>
+                        
+        </apex:pageBlock>
+    
+    </apex:outputPanel>
+  </apex:form>
+</apex:page>

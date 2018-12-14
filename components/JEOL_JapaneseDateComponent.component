@@ -1,0 +1,6 @@
+<apex:component controller="JEOL_JapaneseDateComponentCtrl">
+
+  <apex:attribute name="apexDate" assignTo="{!inputDate}" description="This is the Date on basis of which Japanese Date-string will be computed." type="Date" required="required"/>
+  <apex:outputText value="{!yearName} {!yearNumberString}年 {!monthNumberString}月 {!dayNumberString}日"/>
+
+</apex:component>

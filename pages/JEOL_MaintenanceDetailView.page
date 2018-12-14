@@ -1,0 +1,582 @@
+<apex:page standardController="MaintenanceContractManagement__c" extensions="JEOL_MaintenanceDetailCtrl" >
+
+    <apex:includeScript value="/soap/ajax/29.0/connection.js"/>
+    <apex:includeScript value="/soap/ajax/29.0/apex.js"/>
+
+    <style>
+        .emphasizeButton {
+            font-size: 14px !important;
+            background-color: #FFFDC4 !important;
+            background-image: none !important;
+        }
+    </style>
+
+    <script>
+        function openPrintWindow() {
+            window.open('{!PrintUrl}',"_blank","width=960,height=600,resizable=no,toolbar=no,location=no,menubar=no,status=no,scrollbars=yes");
+        }
+
+
+        function launchSmarepo() {
+
+            sforce.connection.sessionId = '{!$Api.Session_ID}';
+
+            var strId = '{!idSmarepo}';
+
+            var strRet = sforce.apex.execute("NCDSRM.apSRMOutPdf", "doCheck", {inSRMMstId:strId,inDataId:"{!so.Id}"});
+
+            if (strRet == "0"){
+
+                var query = "SELECT NewOdrSalesOrder__c FROM MaintenanceContractManagement__c WHERE Id = '{!so.Id}'";
+                var qr = sforce.connection.query(query);
+                var iter = new sforce.QueryResultIterator(qr);
+
+                while (iter.hasNext()) {
+                    var opp = iter.next();
+                }
+
+                if (opp.NewOdrSalesOrder__c != null) {
+                    var strRet2 = sforce.apex.execute("NCDSRM.apComFunctions", "addAttachmentR", {inStrSRMMstId:strId,inDataId:"{!so.Id}"});
+                    window.open("/servlet/servlet.FileDownload?file=" + strRet2, "");
+                    location.reload();
+                } else {
+                    alert("販売オーダ番号が未設定です。");
+                }
+            } else {
+                alert(strRet);
+            }
+
+        }
+
+    </script>
+            
+    <apex:form >
+
+
+        <apex:pageBlock title="{!$Label.JEOL_MaintDetail_RenewalPipeline}" rendered="{!so != NULL}">
+
+        <apex:outputPanel id="msgErrorPanel">
+               <apex:pageMessages escape="false"/>
+        </apex:outputPanel>
+
+            <apex:pageBlockButtons >
+                <apex:commandButton styleclass="emphasizeButton" action="{!edit}" value="{!$Label.JEOL_MaintDetail_Edit}" />
+
+                <apex:commandButton styleclass="emphasizeButton" action="{!redirectSurvey}" rendered="{!so.PreviousYearOrder__c == NULL}" value="アンケート" />
+
+                <apex:commandButton styleclass="emphasizeButton" value="{!$Label.JEOL_MaintDetail_GuidanceOutput}" action="{!PrintAnnai1}" oncomplete="PrintAnnai2_JS();" rerender="attachmentList" rendered="{!so.PreviousYearOrder__c != NULL}" disabled="{!so.AnnaiType__c == NULL}" />
+                <apex:actionFunction action="{!PrintAnnai2}" name="PrintAnnai2_JS" oncomplete="openPrintWindow();" rerender="attachmentList" />
+
+                <apex:commandButton styleclass="emphasizeButton" action="{!redirectNewQuotation}" value="見積書作成" />
+
+                <apex:commandButton styleclass="emphasizeButton" action="{!redirectSupportList}" value="{!$Label.JEOL_MaintDetail_SVCHistory}" />
+                <apex:commandButton styleclass="emphasizeButton" action="{!redirectList}" value="{!$Label.JEOL_MaintDetail_ReturnList}" />
+
+                <apex:commandButton styleclass="emphasizeButton" action="{!checkBaaN}" value="BaaNチェック" rerender="msgErrorPanel, btnBaanSend"/>
+ 
+                <apex:commandButton styleclass="emphasizeButton" action="{!LinkageSendToBaan}" value="BaaNに送る" oncomplete="linksend2_JS();" status="linkStatusStatus" rerender="msgErrorPanel" disabled="{!!IsCheckBaaNOK}" id="btnBaanSend" />
+
+                <apex:commandButton styleclass="emphasizeButton" value="保守契約連絡票" onclick="launchSmarepo();" rerender="dummy"/>
+
+                <apex:commandButton styleclass="emphasizeButton" action="{!LinkageDeleteFromBaan}" value="取り消し" onclick="if(!window.confirm('取り消ししてよろしいですか？')) return false;" oncomplete="linksend2_JS();" status="linkStatusStatus" disabled="{!!(LinkStatusCode != 0 && LinkStatusCode != 4 && LinkStatusCode != 5)}" id="btnBaanDelete" rerender="msgErrorPanel" style="margin-left: 40px;"/>
+                <apex:actionFunction action="{!RefreshLinkStatus}" name="linksend2_JS" rerender="statusheader, btnBaanDelete, btnBaanSend" status="linkStatusStatus"/>
+
+            </apex:pageBlockButtons>
+
+            <!-- 基本情報 section -->
+            <apex:pageBlockSection title="基本情報" columns="2" id="statusheader">
+                <apex:outputField value="{!so.Name}" />
+
+                <!-- Last Modification -->
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="最終更新者" />
+
+                    <apex:outputPanel >
+                        <apex:outputLink value="../{!so.LastModifiedBy}">
+                            <apex:outputText value="{!so.LastModifiedBy.Name}" />
+                        </apex:outputLink>
+
+                        <apex:outputText value=", {!so.LastModifiedDate}" />
+                    </apex:outputPanel>
+ 
+                </apex:pageBlockSectionItem>
+
+                <!-- ContractImpossible__c / HidePipeline__c -->
+                <apex:pageBlockSectionItem rendered="{!(so.ContractImpossible__c || so.HidePipeline__c)}"/>
+                <apex:outputField value="{!so.ContractImpossibleReason__c}" rendered="{!so.ContractImpossible__c}"/>
+                <apex:outputField value="{!so.HidePipeline__c}" rendered="{!(!so.ContractImpossible__c && so.HidePipeline__c)}"/>
+
+                <!-- Version numbers (Hidden) -->
+                <apex:pageBlockSectionItem id="VersionNumber" rendered="false">
+                    <apex:panelGroup >
+                        <apex:outputLabel value="バージョン"/>
+                    </apex:panelGroup>
+                    <apex:panelGroup >
+                        <apex:outputField value="{!so.VersionNumber__c}" />
+                        <apex:outputText value=" - " />
+                        <apex:outputField value="{!so.LastLinkBaaN__r.VersionSent__c}" />
+                    </apex:panelGroup>
+                </apex:pageBlockSectionItem>
+                
+                <apex:outputField value="{!so.UnitBody__c}" rendered="{!(so.PreviousYearOrder__c == null || so.PreviousYearOrder__r.UnitBodyLink__c == null)}" />
+                <apex:outputField value="{!so.UnitBody__r.Model__c}" rendered="{!(so.PreviousYearOrder__c == null || so.PreviousYearOrder__r.UnitBodyLink__c == null)}" />
+                
+                <apex:pageBlockSectionItem rendered="{!so.PreviousYearOrder__c == null}">
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrQuotation__c.label}" />
+                    <apex:outputLink value="{!$Page.JEOL_QuotationEditorPage + '?id=' + so.NewOdrQuotation__c}" rendered="{!so.NewOdrQuotation__c != null}">
+                        <apex:outputText value="{!IF(ISBLANK(so.NewOdrQuotation__r.QuoteNo__c), '_', so.NewOdrQuotation__r.QuoteNo__c)}" />
+                        <apex:outputText value=" / " />
+                        <apex:outputText value="{!IF(ISBLANK(so.NewOdrQuotation__r.BranchNo__c), '_', so.NewOdrQuotation__r.BranchNo__c)}" />
+                    </apex:outputLink>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem rendered="{!so.PreviousYearOrder__c == null}" />
+
+                <apex:pageBlockSectionItem id="LinkStatus1">
+                    <apex:panelGroup style="line-height: 24px;vertical-align:middle;">
+                        <apex:outputLabel value="連携ステータス"/>
+                    </apex:panelGroup>
+                    <apex:panelGroup style="line-height: 24px;vertical-align:middle;">
+                        <apex:actionStatus style="line-height: 24px;vertical-align:middle;" startText="(refreshing...) " id="linkStatusStatus"/>
+                        <span style="vertical-align:middle;"><apex:outputText value="{!LinkStatus}" /></span>
+                        <apex:commandButton image="{!$Resource.refresh_icon}" action="{!RefreshLinkStatus}" rerender="statusheader, btnBaanDelete, VersionNumber" style="margin-left:10px;margin-top:-4px;vertical-align:middle;" status="linkStatusStatus"/>
+                    </apex:panelGroup>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem id="LinkStatus2">
+                    <apex:outputLabel value="" />
+                    <apex:outputText value="{!LinkStatusMsg}" />                
+                </apex:pageBlockSectionItem>
+
+            </apex:pageBlockSection>
+
+
+
+
+
+            <!-- 情報（前年度の販売オーダ情報） section -->
+            <!--
+            <apex:pageBlockSection title="情報（前年度の販売オーダ情報）" rendered="{!so.PreviousYearOrder__c == null}">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="" />
+                    <apex:outputText value="去年のオーダがありません。" />
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            -->
+
+            <apex:pageBlockSection title="情報（前年度の販売オーダ情報）" rendered="{!so.PreviousYearOrder__c != null}">
+
+                <apex:outputField value="{!so.PreviousYearOrder__c}" />
+
+                <!-- 出荷先取引先 -->
+                <apex:outputField value="{!so.PreviousYearOrder__r.ShipmentAccount__c}" rendered="{!so.PreviousYearOrder__r != null}"/>
+
+                <apex:pageBlockSectionItem />
+
+                <!-- 取引先コード -->
+                <apex:pageBlockSectionItem rendered="{!so.PreviousYearOrder__r != null}">
+                    <apex:outputLabel value="取引先コード" />
+                    <apex:outputField value="{!so.PreviousYearOrder__r.ShipmentAccountCode__c}" />
+                </apex:pageBlockSectionItem>
+
+                <!-- 本体号機 -->
+                <apex:outputField value="{!so.PreviousYearOrder__r.UnitBodyLink__c}" />
+
+                <!-- 機種 -->
+                <apex:outputField value="{!so.PreviousYearOrder__r.UnitBodyLink__r.Model__c}" />
+
+                <!-- オーダ日付 -->
+                <apex:outputField value="{!so.PreviousYearOrder__r.OrderDateFormula__c}" rendered="{!so.PreviousYearOrder__r != null}"/>
+
+                <apex:pageBlockSectionItem rendered="{!so.PreviousYearOrder__r != null}"/>
+
+                <!-- 見積番号 -->
+                <apex:pageBlockSectionItem rendered="{!so.PreviousYearOrder__r != null}">
+                    <apex:outputLabel value="見積No." />
+                    <apex:outputLink value="{!$Page.JEOL_QuotationEditorPage + '?id=' + so.PreviousYearOrder__r.QuotationInformation__c}" rendered="{!so.PreviousYearOrder__r.QuotationInformation__c != null}">
+                        <apex:outputText value="{!IF(ISBLANK(so.PreviousYearOrder__r.QuotationInformation__r.QuoteNo__c), '_', so.PreviousYearOrder__r.QuotationInformation__r.QuoteNo__c)}" />
+                        <apex:outputText value=" / " />
+                        <apex:outputText value="{!IF(ISBLANK(so.PreviousYearOrder__r.QuotationInformation__r.BranchNo__c), '_', so.PreviousYearOrder__r.QuotationInformation__r.BranchNo__c)}" />
+                    </apex:outputLink>
+                </apex:pageBlockSectionItem>
+
+                <!-- 契約金額 -->
+                <apex:outputField value="{!so.PreviousYearOrder__r.ConsumptionTax__c}" rendered="{!so.PreviousYearOrder__r != null}"/>
+
+                <!-- 製番 -->
+                <apex:outputField value="{!so.PreviousYearOrder__r.ProductNumber__c}" rendered="{!so.PreviousYearOrder__r != null}"/>
+
+                <!-- NET保守区分 -->
+                <apex:outputField value="{!so.PreviousYearOrder__r.NetMaintenance__c}" rendered="{!so.PreviousYearOrder__r != null}"/>
+
+                <!-- 保守契約期間 -->
+                <apex:outputField value="{!so.PreviousYearOrder__r.MaintenancePeriodText__c}" rendered="{!so.PreviousYearOrder__r != null}"/>
+
+                <!-- 保守種類 -->
+                <apex:outputField value="{!so.PreviousYearOrder__r.MaintenanceType__c}" rendered="{!so.PreviousYearOrder__r != null}"/>
+
+            </apex:pageBlockSection>
+
+
+
+
+
+            <!-- 前年度保守契約管理 section -->
+            <!--
+            <apex:pageBlockSection title="{!$Label.JEOL_MaintDetail_PrevYearPLInfo}" columns="1" rendered="{!so.PreviousYearPipeline__c == null}">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="" />
+                    <apex:outputText value="去年の保守契約管理がありません。" />
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            -->
+
+            <apex:pageBlockSection title="{!$Label.JEOL_MaintDetail_PrevYearPLInfo}" columns="1" rendered="{!so.PreviousYearPipeline__c != null}">
+
+                <apex:outputField value="{!so.PreviousYearPipeline__c}" />
+                <apex:outputField value="{!so.PreviousYearPipeline__r.NextYearNotes__c}" />
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="前年度備考" />
+                    <apex:outputField value="{!so.PreviousYearPipeline__r.Memo__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="前年度ステータス" />
+                    <apex:outputField value="{!so.PreviousYearPipeline__r.Status__c}" />
+                </apex:pageBlockSectionItem>
+
+            </apex:pageBlockSection>
+
+
+            <apex:pageBlockSection title="他の保守契約管理" columns="1" rendered="{!existOtherPipeline}">
+                <apex:pageBlockTable value="{!lsOtherPipelines}" var="OtherPLRow">
+
+                    <apex:column headerValue="{!$ObjectType.MaintenanceContractManagement__c.fields.Name.Label}">
+                          <apex:outputLink value="{!$Page.JEOL_MaintenanceDetailView + '?id=' + OtherPLRow.id}" >
+                              <apex:outputField value="{!OtherPLRow.Name}"/>
+                          </apex:outputLink>
+                    </apex:column>
+
+                    <apex:column headerValue="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrSalesOrder__c.Label}">
+                          <apex:outputField value="{!OtherPLRow.NewOdrSalesOrder__c}"/>
+                    </apex:column>
+
+                    <apex:column headerValue="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrMaintenanceType__c.Label}">
+                          <apex:outputField value="{!OtherPLRow.NewOdrMaintenanceType__c}"/>
+                    </apex:column>
+
+                    <apex:column headerValue="{!$ObjectType.MaintenanceContractManagement__c.fields.Status__c.Label}">
+                          <apex:outputField value="{!OtherPLRow.Status__c}"/>
+                    </apex:column>
+
+                    <apex:column headerValue="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrMaintenanceStartDate__c.Label}">
+                          <apex:outputField value="{!OtherPLRow.NewOdrMaintenanceStartDate__c}"/>
+                    </apex:column>
+
+                    <apex:column headerValue="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrMaintenanceEndDate__c.Label}">
+                          <apex:outputField value="{!OtherPLRow.NewOdrMaintenanceEndDate__c}"/>
+                    </apex:column>
+
+                    <apex:column headerValue="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrContractAmountt__c.Label}">
+                          <apex:outputField value="{!OtherPLRow.NewOdrContractAmountt__c}"/>
+                    </apex:column>
+
+                    <apex:column headerValue="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrSalesStaff__c.Label}">
+                          <apex:outputField value="{!OtherPLRow.NewOdrSalesStaff__c}"/>
+                    </apex:column>
+                                        
+                </apex:pageBlockTable>
+            </apex:pageBlockSection>
+                        
+
+
+
+
+
+            <!-- 契約予定情報 section -->
+            <apex:pageBlockSection title="{!$Label.JEOL_MaintDetail_RenewalInfo}" rendered="{!so.PreviousYearOrder__c != null}" columns="2">
+
+                <apex:outputField value="{!so.JeolPipelineResponsible__c}" />
+                <apex:outputField value="{!so.JeolPipelineResponsible2__c}" />                
+                <apex:outputField value="{!so.JEOLRegionName__c}" />
+                <apex:outputField value="{!so.JEOLReplyRegionName__c}" />
+                <apex:outputField value="{!so.JEOLContactPosition__c}" />
+                <apex:outputField value="{!so.JEOLReplyContactPosition__c}" />
+                <apex:outputField value="{!so.JEOLContactTel__c}" />
+                <apex:outputField value="{!so.JEOLReplyContactFax__c}" />
+
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem />
+                
+                <apex:outputField value="{!so.NewContractStartDate__c}" />
+                <apex:outputField value="{!so.NewContractEndDate__c}" />
+                <apex:outputField value="{!so.NewContractAmount__c}" />
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.RenewalQuotation__c.label}" />
+                    <apex:outputLink value="{!$Page.JEOL_QuotationEditorPage + '?id=' + so.RenewalQuotation__c}" rendered="{!so.RenewalQuotation__c != null}" >
+                        <apex:outputText value="{!IF(ISBLANK(so.RenewalQuotation__r.QuoteNo__c), '_', so.RenewalQuotation__r.QuoteNo__c)}" />
+                        <apex:outputText value=" / " />
+                        <apex:outputText value="{!IF(ISBLANK(so.RenewalQuotation__r.BranchNo__c), '_', so.RenewalQuotation__r.BranchNo__c)}" />
+                    </apex:outputLink>
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem />
+
+                <apex:outputField value="{!so.RenewalCompanyName__c}" />
+                <apex:outputField value="{!so.RenewalPostalCode__c}" />                
+                <apex:outputField value="{!so.RenewalUndergraduate__c}" />
+                <apex:outputField value="{!so.RenewalAddress__c}" />
+                <apex:outputField value="{!so.RenewalContactPosition__c}" />
+                <apex:outputField value="{!so.RenewalAddress2__c}" />
+                <apex:outputField value="{!so.RenewalTantoshya__c}" />
+                <apex:pageBlockSectionItem />
+
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem />
+
+                <apex:outputField value="{!so.RenewalDeliveryLocation__c}" />
+                <apex:outputField value="{!so.RenewalItemsName__c}" />
+
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem />
+
+                <apex:outputField value="{!so.RenewalOptionCustomerNameLabel__c}" />
+                <apex:outputField value="{!so.RenewalCustomerNameReply__c}" />
+                <apex:outputField value="{!so.RenewalTopSectionText__c}" />
+                <apex:outputField value="{!so.RenewalFooterComment__c}" />
+                <apex:outputField value="{!so.RenewalOptionDateFormat__c}" />
+                <apex:outputField value="{!so.RenewalOptionHideChangeInfo__c}" />
+
+                <apex:outputField value="{!so.RenewalListOptions__c}" />
+                <apex:outputField value="{!so.RenewalPrintDate__c}" />
+
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem />
+
+                <apex:outputField value="{!so.AnnaiType__c}" />
+            </apex:pageBlockSection>
+
+
+
+
+
+            <!-- 状況チェック欄 section -->
+            <apex:pageBlockSection title="{!$Label.JEOL_MaintDetail_Pipeline}" columns="2">
+                <apex:outputField value="{!so.QuotationCreated__c}" />
+                <apex:outputField value="{!so.QuotationSentDate__c}" />
+                <apex:outputField value="{!so.RenewalNoticeCreated__c}" />
+                <apex:outputField value="{!so.RenewalNoticeSentDate__c}" />
+                <apex:outputField value="{!so.ContractSentDate__c}" />
+                <apex:pageBlockSectionItem />
+                <apex:outputField value="{!so.RenewalApproved__c}" />
+                <apex:outputField value="{!so.SubmittedToAccounting__c}" />
+                <apex:outputField value="{!so.PipelineStopped__c}" />
+                <apex:outputField value="{!so.PipelineStoppedReason__c}" />
+                <apex:pageBlockSectionItem />
+                <apex:outputField value="{!so.PipelineStoppedDate__c}" />
+                <apex:outputField value="{!so.Status__c}" />
+                <apex:outputField value="{!so.NewOdrNewUpdated__c}" />
+            </apex:pageBlockSection>
+            <apex:pageBlockSection columns="1">
+                <apex:outputField value="{!so.NextYearNotes__c}" style="width: 600px;" />
+                <apex:outputField value="{!so.Memo__c}" style="width: 600px;" />
+            </apex:pageBlockSection>
+
+
+
+
+
+
+            <!-- 契約情報 section -->
+            <apex:pageBlockSection title="契約情報" columns="2">
+
+                <apex:outputField value="{!so.NewOdrMaintenancePeriodText__c}" />
+                <apex:pageBlockSectionItem />
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrContractAmountt__c.label}" />
+                    <apex:panelGroup style="{!IF(so.ContractAmountLine__c != so.NewOdrContractAmountt__c, 'color: red;', '')}">
+                        <apex:outputField value="{!so.NewOdrContractAmountt__c}" />
+                    </apex:panelGroup>
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem rendered="{!so.ContractAmountLine__c != so.NewOdrContractAmountt__c}" >   
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.ContractAmountLine__c.label}" />
+                    <apex:panelGroup style="color: red;">
+                        <apex:outputField value="{!so.ContractAmountLine__c}" />
+                    </apex:panelGroup>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem rendered="{!so.ContractAmountLine__c != so.NewOdrContractAmountt__c}" />
+
+                <apex:outputField value="{!so.NewOdrSalesPipeline__c}" />
+
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem />
+
+                <!-- 販売先 / 出荷先-->
+                <apex:outputField value="{!so.NewOdrSalesAccount__c}" />
+                <apex:outputField value="{!so.NewOdrShipmentAccount__c}" />
+                <apex:outputField value="{!so.NewOdrSalesAccount__r.Code__c}" />
+                <apex:outputField value="{!so.NewOdrShipmentAccount__r.Code__c}" />
+                <apex:outputField value="{!so.NewOdrSalesAccount__r.Undergraduate__c}" />
+                <apex:outputField value="{!so.NewOdrShipmentAccount__r.Undergraduate__c}" />
+                <apex:outputField value="{!so.NewOdrSalesContactPosition__c}" />
+                <apex:outputField value="{!so.NewOdrShipmentContactPosition__c}" />
+                <apex:outputField value="{!so.NewOdrSalesContactPost__c}" />
+                <apex:outputField value="{!so.NewOdrShipmentContactPost__c}" />
+                <apex:outputField value="{!so.NewOdrSalesTantoshya__c}" />
+                <apex:outputField value="{!so.NewOdrShipmentTantosha__c}" />
+                <apex:outputField value="{!so.NewOdrSalesAccount__r.Address__c}" />
+                <apex:outputField value="{!so.NewOdrShipmentAccount__r.Address__c}" />
+                <apex:outputField value="{!so.NewOdrSalesContactTel__c}" />
+                <apex:outputField value="{!so.NewOdrShipmentContact_Tel__c}" />
+                <apex:outputField value="{!so.NewOdrSalesContactFax__c}" />
+                <apex:outputField value="{!so.NewOdrShipmentContact_Fax__c}" />
+
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem />
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="営業担当コード" />
+                    <apex:outputField value="{!so.NewOdrSalesStaff__r.UserCode__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="アシスタントコード" />
+                    <apex:outputField value="{!so.NewOdrAssistant__r.UserCode__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:outputField value="{!so.NewOdrSalesStaff__c}" />
+                <apex:outputField value="{!so.NewOdrAssistant__c}" />
+
+            </apex:pageBlockSection>
+
+
+
+
+
+            <!-- 販売オーダ情報 section -->
+            <apex:pageBlockSection title="販売オーダ情報" columns="2">
+            
+                <apex:outputField value="{!so.NewOdrSalesOrder__c}" />
+                <apex:outputField value="{!so.NewOdrOrderDate__c}" />
+
+                <apex:outputField value="{!so.ProductNumber__c}" />
+
+                <!-- 年度 -->
+                <apex:outputField value="{!so.NewOdrFiscalYear__c}" />
+
+                <apex:outputField value="{!so.NewOdrNetMaintenance__c}" />
+
+                <apex:pageBlockSectionItem rendered="{!so.PreviousYearOrder__c != null}">
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrQuotation__c.label}" />
+                    <apex:outputLink value="{!$Page.JEOL_QuotationEditorPage + '?id=' + so.NewOdrQuotation__c}" rendered="{!so.NewOdrQuotation__c != null}">
+                        <apex:outputText value="{!IF(ISBLANK(so.NewOdrQuotation__r.QuoteNo__c), '_', so.NewOdrQuotation__r.QuoteNo__c)}" />
+                        <apex:outputText value=" / " />
+                        <apex:outputText value="{!IF(ISBLANK(so.NewOdrQuotation__r.BranchNo__c), '_', so.NewOdrQuotation__r.BranchNo__c)}" />
+                    </apex:outputLink>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem rendered="{!so.PreviousYearOrder__c == null}" />
+
+                <apex:outputField value="{!so.NewOdrSeries__c}" />
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrRegion__c.label}" />
+                    <apex:outputText value="{!CurrentNewOdrArea}" />
+                </apex:pageBlockSectionItem>
+
+                <apex:outputField value="{!so.NewOdrDepartment__c}" />
+                <apex:outputField value="{!so.NewOdrContractDivision__c}" />
+
+                <apex:outputField value="{!so.NewOdrFlagshipProduct__c}" />
+                <apex:pageBlockSectionItem />
+                
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection columns="1">
+                <apex:outputField value="{!so.NewOdrOrdersMemp__c}" style="width: 600px;" />
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection >
+                <apex:outputField value="{!so.NewOdrReferenceOrder__c}" />
+                <apex:pageBlockSectionItem />
+                <apex:outputField value="{!so.NewOdrTradingCompanyInvolved__c}" />
+                <apex:outputField value="{!so.NewOdrShareOrderAmount__c}" />
+                <apex:outputField value="{!so.NewOdrCommissionOrderAmount__c}" />
+                <apex:outputField value="{!so.NewOdrCommissionPayment__c}" />
+                <apex:outputField value="{!so.NewOdrMaintenanceType__c}" />
+                <apex:pageBlockSectionItem />
+                <apex:outputField value="{!so.NewOdrRoutineCheck__c}" />
+                <apex:outputField value="{!so.NewOdrTroubleshooting__c}" />
+                <apex:outputField value="{!so.NewOdrNotices1__c}" />
+                <apex:outputField value="{!so.NewOdrNotices2__c}" />
+                <apex:outputField value="{!so.NewOdrRepairParts__c}" />
+                <apex:outputField value="{!so.NewOdrAtt__c}" />
+                <apex:outputField value="{!so.NewOdrOther1__c}" />
+                <apex:outputField value="{!so.NewOdrOther2__c}" />
+                <apex:outputField value="{!so.NewOdrSalesNoOfTimes__c}" />
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem />
+                <apex:outputField value="{!so.SubAmountHontaiInspec__c}" />
+                <apex:outputField value="{!so.SubAmountHontaiNoInspec__c}" />
+                <apex:outputField value="{!so.SubAmountAttach__c}" />
+                <apex:outputField value="{!so.SubAmountHelium__c}" />
+                <apex:outputField value="{!so.BillingMethodHontai__c}" />
+                <apex:outputField value="{!so.BillingMethodHelium__c}" />
+            </apex:pageBlockSection>
+
+
+
+
+
+            <!-- 納入アンケート結果 section -->
+            <apex:pageBlockSection title="納入アンケート結果" rendered="{!so.PreviousYearOrder__c == null}" >
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="返却" />
+                    <apex:outputField value="{!so.InquiryRepayment__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="保守可能性" />
+                    <apex:outputField value="{!so.InquiryMaintenancePossibity__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="価格表" />
+                    <apex:outputField value="{!so.InquiryPriceList__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="見積書" />
+                    <apex:outputField value="{!so.InquiryQuotation__c}" />             
+                </apex:pageBlockSectionItem>
+    
+            </apex:pageBlockSection>
+
+
+            
+        </apex:pageBlock>
+
+    </apex:form>
+
+    <apex:relatedList list="AccountBook1__r" title="{!$Label.JEOL_MaintAccBook_Label_AccountBook}" pagesize="150"/>
+    <apex:relatedList list="AccountBook2__r" title="{!$Label.JEOL_MaintAccBook_Label_AccountBookNoInspec}" pagesize="150"/>
+    <apex:relatedList list="AccountBook3__r" title="{!$Label.JEOL_MaintAccBook_Label_AccountBookAttach}" pagesize="150"/>
+    <apex:relatedList list="AccountBook4__r" title="{!$Label.JEOL_MaintAccBook_Label_AccountBookHelium}" pagesize="150"/>
+
+    <apex:relatedList list="MaintenanceOrderDocument_MCM__r" pagesize="20"/>
+
+    <apex:relatedList list="MaintenancePurchaseManagement__r" pagesize="20"/>
+
+    <apex:relatedList list="MaintenanceLinkOrder__r" pagesize="5"/>
+    
+    <apex:outputPanel id="attachmentList" layout="block">
+        <apex:relatedList list="CombinedAttachments" />
+    </apex:outputPanel>
+    
+    <apex:relatedList list="OpenActivities"/>
+    
+    <apex:relatedList list="ActivityHistories" />
+
+    <div id="c_History" >
+        <c:JEOL_GenericHistoryComponent object="{!MaintenanceContractManagement__c}" recordsLimit="50"/>
+    </div>
+          
+</apex:page>

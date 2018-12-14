@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customSettingsType>List</customSettingsType>
+    <description>List of Company Names used to define which company the user belongs to.</description>
+    <enableFeeds>false</enableFeeds>
+    <fields>
+        <fullName>AreaCode__c</fullName>
+        <externalId>false</externalId>
+        <label>Area Code</label>
+        <length>3</length>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>BankDetail__c</fullName>
+        <externalId>false</externalId>
+        <label>Bank Detail</label>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>TextArea</type>
+    </fields>
+    <fields>
+        <fullName>CompanyLabel__c</fullName>
+        <externalId>false</externalId>
+        <label>Company Label</label>
+        <length>50</length>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>CompanyName__c</fullName>
+        <caseSensitive>false</caseSensitive>
+        <description>Used to compare with CompanyName in the profile of the user to determine which company the user belongs to.</description>
+        <externalId>false</externalId>
+        <label>Company Name</label>
+        <length>80</length>
+        <required>true</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>true</unique>
+    </fields>
+    <fields>
+        <fullName>Company__c</fullName>
+        <description>Company type : ASIA / US / ...</description>
+        <externalId>false</externalId>
+        <label>Company</label>
+        <length>50</length>
+        <required>true</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>JEOLAddress__c</fullName>
+        <externalId>false</externalId>
+        <label>JEOL Address</label>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>TextArea</type>
+    </fields>
+    <fields>
+        <fullName>OrgAddress__c</fullName>
+        <externalId>false</externalId>
+        <label>Organization Address</label>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>TextArea</type>
+    </fields>
+    <fields>
+        <fullName>OrgFax__c</fullName>
+        <externalId>false</externalId>
+        <label>Organization Fax</label>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Phone</type>
+    </fields>
+    <fields>
+        <fullName>OrgPhone__c</fullName>
+        <externalId>false</externalId>
+        <label>Organization Phone</label>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Phone</type>
+    </fields>
+    <fields>
+        <fullName>QuotationPrintSignUserID__c</fullName>
+        <description>Contains the ID of the user whose the signature will be used when printing the quotations.</description>
+        <externalId>false</externalId>
+        <label>QuotationPrintSignUserID</label>
+        <length>18</length>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>TaxationRate__c</fullName>
+        <externalId>false</externalId>
+        <label>Taxation Rate</label>
+        <precision>3</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackTrending>false</trackTrending>
+        <type>Percent</type>
+    </fields>
+    <label>CompanyName</label>
+    <listViews>
+        <fullName>All</fullName>
+        <columns>NAME</columns>
+        <columns>Company__c</columns>
+        <columns>CompanyName__c</columns>
+        <columns>CompanyLabel__c</columns>
+        <columns>AreaCode__c</columns>
+        <columns>BankDetail__c</columns>
+        <columns>JEOLAddress__c</columns>
+        <columns>OrgAddress__c</columns>
+        <columns>OrgPhone__c</columns>
+        <columns>OrgFax__c</columns>
+        <columns>QuotationPrintSignUserID__c</columns>
+        <columns>TaxationRate__c</columns>
+        <filterScope>Everything</filterScope>
+        <label>All</label>
+        <language>ja</language>
+    </listViews>
+    <visibility>Public</visibility>
+</CustomObject>

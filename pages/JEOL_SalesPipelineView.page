@@ -1,0 +1,9 @@
+<apex:page standardcontroller="SalesPipeline__c">
+
+    <!--
+    // Obsolete
+    // Use a standard layout
+    // Modified 2016/9/1 by Polus
+    -->
+
+</apex:page>

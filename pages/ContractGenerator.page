@@ -1,0 +1,240 @@
+<apex:page standardController="SVC__c" renderAs="pdf" extensions="ContractGeneratorCtrl"  showHeader="false" standardStylesheets="true" applyHtmlTag="false" applyBodyTag="false" doctype="html-5.0">
+<html>
+	<head>
+		<style>
+		@page{
+			margin: 0;
+		}
+		.clear{
+			clear: both;
+		}
+		.banner-left{
+			float: left;
+		}
+		.banner-left p{
+			margin-left: 40px;
+			line-height: 0.2;
+		}
+		.banner-left .corp-info{
+			margin-top: -30px;
+		}
+		.banner-right{
+			float: right;
+			margin-right: 20px;
+			margin-top: 15px;
+		}
+		.banner-right p{
+			line-height: 0;
+			font-weight: bold;
+			font-size: 30px;
+		}
+		.banner-right table{
+			margin-top: -5px;
+			font-size: 15px;
+			
+		}
+		.banner-right table, .customer-info table, table.model-first, .req-prob table, .solution table, .sign table, .duration table, .part table{
+			border-collapse: collapse;
+		}
+		.banner-right table, .banner-right td, .customer-info table, .customer-info td, table.model-first, td.model-first, .req-prob table, .req-prob td, .solution table, .solution td, .sign table, .sign td, .duration table, .duration td, .part table, .part td{
+			border: 1px solid black;
+		}
+		.customer-info{
+			margin: 20px 20px 0 20px;
+		}
+		.model, .req-prob, .solution, .sign, .duration, .part{
+			margin: 40px 20px 0 20px;
+		}
+		.customer-info table, .req-prob table, .solution table, .duration table, .part table{
+			width: 100%;
+		}
+		.model table{
+			width: 100%;
+			font-size: 15px;
+		}
+		.padding-left-15{
+			padding-left: 15px;
+		}
+		.model img{
+			padding-top: 10px;
+			width: 10px;
+		}
+		.req-prob p, .solution p, .duration p, .part p{
+			margin: 0;
+			font-size: 20px;
+		}
+
+		</style>
+	</head>
+	<body>
+	<apex:form >
+		<div>
+			<div class="banner-left">
+				<img src="https://www.jeol.co.jp/common/images/img_logo_sg.png" width="350" class="logo"/>
+				<div class="corp-info">
+				<p>Co Regn No: 199500744W</p>
+				<p>2 Corporation Road #01-12</p>
+				<p>Corporation Place Singapore 618494</p>
+				<p>Tel: (65) 6565 9989 Fax: (65) 6565 7552</p>
+				</div>
+			</div>
+			
+			<div class="banner-right">
+				<p>Service Report</p>
+				<table>
+					<tr>
+						<td width="90px">Job No.</td>
+						<td width="170px">{!record.Job_No__c}</td>
+					</tr>
+					<tr>
+						<td>Date</td>
+						<td><apex:outputText value="{0,date,yyyy/MM/dd}"> <apex:param value="{!record.Date__c}" /> </apex:outputText></td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<div class="clear"/>
+		<div class="customer-info">
+			<table>
+				<tr>
+					<td width="20%"> Customer</td>
+					<td width="80%"> {!record.customer_company_name__c}</td>
+				</tr>
+				<tr>
+					<td> User's Name</td>
+					<td> {!record.Customer_Contact_Name__c}</td>
+				</tr>
+				<tr>
+					<td> Address</td>
+					<td> {!record.customer_address__c}</td>
+				</tr>
+			</table>
+		</div>
+		<div class="model">
+			<table class="model-first">
+				<tr>
+					<td class="model-first">Model&nbsp; &nbsp; &nbsp; &nbsp;{!record.model__c}</td>
+					<td class="model-first">Serial No.&nbsp; &nbsp; &nbsp; &nbsp;{!record.serial_number__c}</td>
+				</tr>
+				<tr>
+					<td class="model-first">
+						<table>
+							<tr>
+								<td>1<img src="{!IF(record.isform1__c, URLFOR($Resource.SPAElements,'/elements/checked.png'), URLFOR($Resource.SPAElements,'/elements/uncheck.png'))}"/> With SVC</td>
+								<td>3<img src="{!IF(record.isform3__c, URLFOR($Resource.SPAElements,'/elements/checked.png'), URLFOR($Resource.SPAElements,'/elements/uncheck.png'))}"/> Under Warranty</td>
+							</tr>
+							<tr>
+								<td>2<img src="{!IF(record.isform2__c, URLFOR($Resource.SPAElements,'/elements/checked.png'), URLFOR($Resource.SPAElements,'/elements/uncheck.png'))}"/> Demand</td>
+								<td>4<img src="{!IF(record.isform4__c, URLFOR($Resource.SPAElements,'/elements/checked.png'), URLFOR($Resource.SPAElements,'/elements/uncheck.png'))}"/> Other (Modification, claim)</td>
+							</tr>
+						</table>
+					</td>
+					<td class="model-first">
+						<table>
+							<tr>
+
+								<td>1<img src="{!IF(record.istype1__c, URLFOR($Resource.SPAElements,'/elements/checked.png'), URLFOR($Resource.SPAElements,'/elements/uncheck.png'))}"/> PM</td>
+								<td>3<img src="{!IF(record.istype3__c, URLFOR($Resource.SPAElements,'/elements/checked.png'), URLFOR($Resource.SPAElements,'/elements/uncheck.png'))}"/> Installation</td>
+								<td>5<img src="{!IF(record.istype5__c, URLFOR($Resource.SPAElements,'/elements/checked.png'), URLFOR($Resource.SPAElements,'/elements/uncheck.png'))}"/> Breakdown</td>
+								<td>7<img src="{!IF(record.istype7__c, URLFOR($Resource.SPAElements,'/elements/checked.png'), URLFOR($Resource.SPAElements,'/elements/uncheck.png'))}"/> Other</td>
+							</tr>
+							<tr>
+								<td>2<img src="{!IF(record.istype2__c, URLFOR($Resource.SPAElements,'/elements/checked.png'), URLFOR($Resource.SPAElements,'/elements/uncheck.png'))}"/> Re-Location</td>
+								<td>4<img src="{!IF(record.istype4__c, URLFOR($Resource.SPAElements,'/elements/checked.png'), URLFOR($Resource.SPAElements,'/elements/uncheck.png'))}"/> Modification</td>
+								<td>6<img src="{!IF(record.istype6__c, URLFOR($Resource.SPAElements,'/elements/checked.png'), URLFOR($Resource.SPAElements,'/elements/uncheck.png'))}"/> Work Shop</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<div class="req-prob">
+			<p class="padding-left-15">Customer's Request / Problem</p>
+			<table>
+				<tr>
+					<td><div style="min-height: 35px">{!record.probrem_request__c}</div></td>
+				</tr>
+			</table>
+		</div>
+
+		<div class="solution">
+			<p class="padding-left-15">Service Performed / Solution</p>
+			<table>
+				<tr>
+					<td><div style="min-height: 35px">{!record.performed_solution__c}</div></td>
+				</tr>
+			</table>
+		</div>
+
+		<div class="duration">
+			<p class="padding-left-15">Duration of Service</p>
+			<table>
+				<tr>
+					<td>Date</td>
+					<td>Working Hour</td>
+				</tr>
+				<apex:repeat value="{!record.activity__r}" var="duration">
+				<tr>
+					<td><apex:outputText value="{0,date,yyyy/MM/dd}"> <apex:param value="{!duration.Date__c}" /> </apex:outputText></td>
+					<td>{!duration.Working_Hour__c}</td>
+				</tr>
+				</apex:repeat>
+			</table>
+		</div>
+
+		<div class="part">
+			<p class="padding-left-15">Parts Supplied</p>
+			<table>
+				<tr>
+					<td>Parts No.</td>
+					<td>Descrtiption</td>
+					<td>Type</td>
+					<td>Qty</td>
+					<td>Price / pc</td>
+					<td>Total</td>
+				</tr>
+				<apex:repeat value="{!record.parts__r}" var="part">
+				<tr>
+					<td>{!part.Part_No__c}</td>
+					<td>{!part.Description__c}</td>
+					<td>{!part.Type__c}</td>
+					<td>{!part.QTY__c}</td>
+					<td>{!part.Price_PC__c}</td>
+					<td>{!part.Total__c}</td>
+				</tr>
+				</apex:repeat>
+			</table>
+		</div>
+
+		<div class="sign">
+			<div style="float: left; width: 45%; display: inline-block;">
+			<table>
+				<tr>
+					<td width="15%" height="55">Customer's Signature</td>
+					<td width="30%"><img width="80px" src="{!signSrc}"/></td>
+				</tr>
+				<tr height="55">
+					<td height="55">Name</td>
+					<td><p>{!currentUser}</p></td>
+				</tr>
+			</table>
+			</div>
+			<div style="float: right; width: 45%; display: inline-block;">
+			<table>
+				<tr height="55">
+					<td width="15%" height="55">JEOL Engineer's Signature</td>
+					<td width="30%"></td>
+				</tr>
+				<tr height="55">
+					<td height="55">Name</td>
+					<td><p></p></td>
+				</tr>
+			</table>
+			</div>
+		</div>
+		
+	</apex:form>
+	</body>
+</html>
+</apex:page>

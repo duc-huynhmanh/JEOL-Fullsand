@@ -1,0 +1,407 @@
+<apex:page controller="JEOL_MaintenanceMultipleAnnai_ctrl" docType="html-5.0" >
+  <apex:stylesheet value="{!URLFOR($Resource.SearchBaseCss)}" />
+  <apex:stylesheet value="{!URLFOR($Resource.JQueryUI, 'JQueryUI/jquery-ui.min.css')}" />
+  <apex:includeScript value="{!URLFOR($Resource.JQuery)}" />
+ 
+
+    
+  <style>
+    .input{
+        font-size:14px;
+        font-family:;
+        border: 1px solid #989c9d;
+        border-radius:5px;
+        padding: 3px 5px;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+        width: 120px;
+    }
+
+    .jeol_wait_panel {
+        left: auto !important;
+    }
+    .record-list {
+        margin-left: 0px;
+    }
+    #searchPanel {
+      margin-left: 0px;
+    }
+    .screenname {
+      margin-left: 0px;
+      margin-bottom: 20px;
+    }
+    .fakeContainer {
+        width:1013px;
+        height: 0px;
+    }
+    .anomaly {
+        color: red;
+    }
+    .total {
+        font-weight: bold;
+        color: blue;
+    }
+    
+    .clm00 { width: 26px;}
+    .clm01 { width: 100px;}
+    .clm02 { width: 100px;}
+    .clm03 { width: 100px;}
+    .clm04 { width: 100px;} 
+    .clm05 { width: 100px;}
+    .clm06 { width: 100px;} 
+
+    .input-field-width{
+      width: 270px;
+    }
+    
+  </style>
+  <script type="text/javascript">
+    var $j = jQuery.noConflict();
+    var viewFunction;
+
+    function mode() {
+        if ((typeof viewFunction).toLowerCase() === 'function') {
+            viewFunction();
+        }
+    }
+
+    function callChangeOrder(key) {
+        var obj = $j('.orderInput');
+        obj.val(key);
+        changeOrder();
+    }
+
+    function AdaptSizeContainer() {
+        $j(".fakeContainer").animate({height: $j('#viewTable').height() + 'px'}, 500);
+    }
+
+    $j(document).ready(function(){
+        AdaptSizeContainer();
+    });
+    
+  </script>
+
+  <apex:form style="width: 994px; margin-left: auto; margin-right: auto;">
+    <c:JEOL_WaitSearchPanel text="{!$Label.JEOL_MaintMultGuid_Label_Searching}"/>
+    <apex:variable value="{!$ObjectType.MaintenanceAccountBook__c.Fields}" var="fields" />
+    <apex:outputPanel id="order">
+      <apex:inputText id="orderBy" styleClass="orderInput" value="{!orderBy}" style="display: none;" />
+      <apex:actionFunction name="changeOrder" action="{!changeOrder2}" oncomplete="mode();AdaptSizeContainer();" rerender="searchResult, pageMessages" />
+    </apex:outputPanel>
+    <div class="screenname">
+      <img src="{!URLFOR($Resource.Images, 'images/icons/title_icon_orderplan.png')}" align="left" width="40px" />
+      <span id="title">{!$Label.JEOL_MaintMultGuid_Message_MultipleGuidance}</span>
+    </div>
+
+    <apex:outputPanel layout="block" id="searchResult" >
+      <apex:pageMessages id="pageMessages" />
+      <apex:outputPanel rendered="{!SalesPipelines.size > 0}">
+        <table class="record-list" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-bottom:0px;">
+          <col class="clm00" />
+          <col class="clm01" />
+          <col class="clm02" />
+          <col class="clm03" />
+          <col class="clm04" />
+          <col class="clm05" />
+          <col class="clm06" />
+        
+          <tr class="contents_title">
+            <td colspan="7" style="padding: 0;">
+              <div class="in_contents_title">{!$Label.JEOL_MaintMultGuid_Label_SearchResults}</div>
+            </td>
+          </tr>
+          <tr class="koumoku">
+            <th>
+                <span>No</span>
+            </th>
+            <th>
+              <a href="javascript:void(0);" onclick="callChangeOrder('name');">
+                <apex:outputText value="{!$ObjectType.MaintenanceContractManagement__c.Fields.name.label}" />
+                <apex:outputText rendered="{!orderBy=='name' && (!orderDesc)}">△</apex:outputText>
+                <apex:outputText rendered="{!orderBy=='name' && orderDesc}">▽</apex:outputText>
+              </a>
+            </th>
+            <th>
+              <a href="javascript:void(0);" onclick="callChangeOrder('NewOdrSalesAccount__r.Name');">
+                <apex:outputText value="{!$ObjectType.MaintenanceContractManagement__c.Fields.NewOdrSalesAccount__c.label}" />
+                <apex:outputText rendered="{!orderBy=='NewOdrSalesAccount__r.Name' && (!orderDesc)}">△</apex:outputText>
+                <apex:outputText rendered="{!orderBy=='NewOdrSalesAccount__r.Name' && orderDesc}">▽</apex:outputText>
+              </a>
+              <br/>
+              <a href="javascript:void(0);" onclick="callChangeOrder('NewOdrSalesAccount__r.Code__c');">
+                <apex:outputText value="販売先コード" />
+                <apex:outputText rendered="{!orderBy=='NewOdrSalesAccount__r.Code__c' && (!orderDesc)}">△</apex:outputText>
+                <apex:outputText rendered="{!orderBy=='NewOdrSalesAccount__r.Code__c' && orderDesc}">▽</apex:outputText>
+              </a>
+            </th>
+            <th>
+              <a href="javascript:void(0);" onclick="callChangeOrder('NewOdrShipmentAccount__r.Name');">
+                <apex:outputText value="{!$ObjectType.MaintenanceContractManagement__c.Fields.NewOdrShipmentAccount__c.label}" />
+                <apex:outputText rendered="{!orderBy=='NewOdrShipmentAccount__r.Name' && (!orderDesc)}">△</apex:outputText>
+                <apex:outputText rendered="{!orderBy=='NewOdrShipmentAccount__r.Name' && orderDesc}">▽</apex:outputText>
+              </a>
+              <br/>
+              <a href="javascript:void(0);" onclick="callChangeOrder('NewOdrShipmentAccount__r.Code__c');">
+                <apex:outputText value="出荷先コード" />
+                <apex:outputText rendered="{!orderBy=='NewOdrShipmentAccount__r.Code__c' && (!orderDesc)}">△</apex:outputText>
+                <apex:outputText rendered="{!orderBy=='NewOdrShipmentAccount__r.Code__c' && orderDesc}">▽</apex:outputText>
+              </a>
+            </th>
+            <th>
+              <a href="javascript:void(0);" onclick="callChangeOrder('NewContractStartDate__c');">
+                <apex:outputText value="{!$ObjectType.MaintenanceContractManagement__c.Fields.NewContractStartDate__c.label}" />
+                <apex:outputText rendered="{!orderBy=='NewContractStartDate__c' && (!orderDesc)}">△</apex:outputText>
+                <apex:outputText rendered="{!orderBy=='NewContractStartDate__c' && orderDesc}">▽</apex:outputText>
+              </a>
+            </th>
+            <th>
+              <a href="javascript:void(0);" onclick="callChangeOrder('NewContractEndDate__c');">
+                <apex:outputText value="{!$ObjectType.MaintenanceContractManagement__c.Fields.NewContractEndDate__c.label}" />
+                <apex:outputText rendered="{!orderBy=='NewContractEndDate__c' && (!orderDesc)}">△</apex:outputText>
+                <apex:outputText rendered="{!orderBy=='NewContractEndDate__c' && orderDesc}">▽</apex:outputText>
+              </a>
+            </th>
+            <th>
+              <a href="javascript:void(0);" onclick="callChangeOrder('NewContractAmount__c');">
+                <apex:outputText value="{!$ObjectType.MaintenanceContractManagement__c.Fields.NewContractAmount__c.label}" />
+                <apex:outputText rendered="{!orderBy=='NewContractAmount__c' && (!orderDesc)}">△</apex:outputText>
+                <apex:outputText rendered="{!orderBy=='NewContractAmount__c' && orderDesc}">▽</apex:outputText>
+              </a>
+            </th>
+          </tr>
+        </table>
+        
+        <!-- 一覧 -->
+        <div class="fakeContainer" style="margin-top:0px; margin-bottom:0px;">
+          <apex:variable value="{!(ssc.PageNumber-1)*ssc.PageSize+1}" var="baseRowNumber"/>
+          <table id="viewTable" class="record-list" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-top:0px; margin-bottom:0px;">
+            <col class="clm00" />
+            <col class="clm01" />
+            <col class="clm02" />
+            <col class="clm03" />
+            <col class="clm04" />
+            <col class="clm05" />
+            <col class="clm06" />
+            <apex:repeat value="{!SalesPipelines}" var="salesPipeline" >
+              <tr class="contents">
+                <td>
+                   <apex:outputText value="{!baseRowNumber+salesPipeline.rowNumber}"/>
+                </td>
+                <td >
+                  <apex:outputLink value="{!'/' + salesPipeline.rec.id}" >
+                    <apex:outputText value="{!salesPipeline.rec.name}" />
+                  </apex:outputLink>
+                </td>
+                <td >
+                    <apex:outputpanel styleClass="{!IF(fProblemAccount || fWarningAccount, 'anomaly', '')}">
+                        <apex:outputField value="{!salesPipeline.rec.NewOdrSalesAccount__c}" />                
+                        <br/>
+                        <apex:outputField value="{!salesPipeline.rec.NewOdrSalesAccount__r.Code__c}" />                
+                    </apex:outputpanel>
+                </td>
+                <td >
+                    <apex:outputField value="{!salesPipeline.rec.NewOdrShipmentAccount__c}" />                
+                    <br/>
+                    <apex:outputField value="{!salesPipeline.rec.NewOdrShipmentAccount__r.Code__c}" />                
+                </td>
+                <td >
+                    <apex:outputpanel styleClass="{!IF(fProblemStartDate, 'anomaly', '')}">
+                        <apex:outputField value="{!salesPipeline.rec.NewContractStartDate__c}" />                
+                    </apex:outputpanel>
+                </td>
+                <td >
+                    <apex:outputpanel styleClass="{!IF(fProblemEndDate, 'anomaly', '')}">
+                        <apex:outputField value="{!salesPipeline.rec.NewContractEndDate__c}" />                
+                    </apex:outputpanel>
+                </td>
+                <td >
+                    <apex:outputField value="{!salesPipeline.rec.NewContractAmount__c}" />                
+                </td>
+              </tr>
+            </apex:repeat>
+
+          <tr class="contents">
+            <td>
+            </td>
+            <td >
+            </td>
+            <td >
+<!--
+                <apex:outputpanel styleClass="total">
+                    <apex:outputField value="{!MultipleAnnaiSummary.Account__c}" />                
+                </apex:outputpanel>
+-->
+            </td>
+            <td >
+            </td>
+            <td >
+                <apex:outputpanel styleClass="total">
+                    <apex:outputField value="{!MultipleAnnaiSummary.StartDate__c}" />                
+                </apex:outputpanel>
+            </td>
+            <td >
+                <apex:outputpanel styleClass="total">
+                    <apex:outputField value="{!MultipleAnnaiSummary.EndDate__c}" />                
+                </apex:outputpanel>
+            </td>
+            <td >
+                <apex:outputpanel styleClass="total">
+                    <apex:outputField value="{!MultipleAnnaiSummary.Amount__c}" />                
+                </apex:outputpanel>
+            </td>
+          </tr>
+
+           </table>
+        </div>
+      
+        <!-- ページ遷移欄-->
+        <table class="record-list" border="1" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-top:0px; margin-bottom:0px;">
+          <col class="clm00" />
+          <col class="clm01" />
+          <col class="clm02" />
+          <col class="clm03" />
+          <col class="clm04" />
+          <col class="clm05" />
+          <col class="clm06" />
+          <apex:variable value="{!SalesPipelines.size}" var="size" />
+          <tr class="menu">
+            <td colspan="7" style="padding: 0;">
+              <table id="each_menu">
+                <tr>
+                  <td align="left" width="33%" style="border: 0px; vertical-align: middle;" >
+                    <apex:outputPanel rendered="{!ssc.PageSize != null}">
+                      <apex:outputText value="{!(ssc.PageNumber - 1) * ssc.PageSize + 1} - {!(ssc.PageNumber - 1) * ssc.PageSize + size}/{!ssc.ResultSize}" />
+                    </apex:outputPanel>
+                  </td>
+                  <td align="center" width="33%" style="border: 0px; vertical-align: middle ;">
+                  </td>
+                  <td align="right" width="33%" style="border: 0px; vertical-align: middle ;">
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </apex:outputPanel>
+      <apex:outputpanel rendered="{!SalesPipelines.size == null || SalesPipelines.size <= 0}" >
+        <table class="record-list" border="1" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-top: 0; margin-bottom: 0;">
+          <tr class="contents_title">
+            <td >
+              <div class="in_contents_title">{!$Label.JEOL_MaintMultGuid_Message_NoData}</div>
+            </td>
+          </tr>
+        </table>
+      </apex:outputpanel>
+    </apex:outputPanel>
+    
+    <br/>
+
+    <apex:pageBlock rendered="{!!IsPrintForbidden}" id="refreshblock">
+        <apex:pageBlockSection columns="2">
+
+            <apex:inputField styleClass="input-field-width" value="{!MultipleAnnaiSummary.ContractNoPrint__c}" tabOrderHint="1" />
+            <apex:outputField value="{!MultipleAnnaiSummary.PreviousAmount__c}" />
+            <apex:inputField styleClass="input-field-width" value="{!MultipleAnnaiSummary.UnitBodyPrint__c}" tabOrderHint="1" />
+            <apex:pageBlockSectionItem />
+
+            <apex:pageBlockSectionItem />
+            <apex:pageBlockSectionItem />
+
+            <apex:inputField styleClass="input-field-width" value="{!MultipleAnnaiSummary.JEOLPipelineResponsiblePrint__c}" tabOrderHint="1" />
+            <apex:inputField styleClass="input-field-width" value="{!MultipleAnnaiSummary.JEOLPipelineResponsible2Print__c}" tabOrderHint="2" />
+            <apex:inputField styleClass="input-field-width" value="{!MultipleAnnaiSummary.JEOLRegionNamePrint__c}" tabOrderHint="1" />
+            <apex:inputField styleClass="input-field-width" value="{!MultipleAnnaiSummary.JOELReplyRegionNamePrint__c}" tabOrderHint="2" />
+            <apex:inputField styleClass="input-field-width" value="{!MultipleAnnaiSummary.JEOLContactPositionPrint__c}" tabOrderHint="1" />
+            <apex:inputField styleClass="input-field-width" value="{!MultipleAnnaiSummary.JEOLReplyContactPositionPrint__c}" tabOrderHint="2" />
+            <apex:inputField styleClass="input-field-width" value="{!MultipleAnnaiSummary.RenewalContactTelPrint__c}" tabOrderHint="1" />
+            <apex:inputField styleClass="input-field-width" value="{!MultipleAnnaiSummary.RenewalContactFaxPrint__c}" tabOrderHint="2" />
+
+            <apex:pageBlockSectionItem />
+            <apex:pageBlockSectionItem />
+
+            <apex:inputField styleClass="input-field-width" value="{!MultipleAnnaiSummary.MaintenancePeriodPrint__c}" tabOrderHint="99" />
+            <apex:pageBlockSectionItem />
+            <apex:outputField value="{!MultipleAnnaiSummary.Amount__c}" />
+            <apex:inputField styleClass="input-field-width" value="{!MultipleAnnaiSummary.RenewalQuotationNumber__c}" tabOrderHint="99" />
+
+            <apex:pageBlockSectionItem />
+            <apex:pageBlockSectionItem />
+
+            <apex:inputField styleClass="input-field-width" value="{!MultipleAnnaiSummary.RenewalCompanyNamePrint__c}" tabOrderHint="100" />
+            <apex:inputField styleClass="input-field-width" value="{!MultipleAnnaiSummary.RenewalAddressPostalCodePrint__c}" tabOrderHint="101" />
+            <apex:inputField styleClass="input-field-width" value="{!MultipleAnnaiSummary.RenewalUndergraduatePrint__c}" tabOrderHint="100" />
+            <apex:inputField styleClass="input-field-width" value="{!MultipleAnnaiSummary.RenewalAddressLine1Print__c}" tabOrderHint="101" />
+            <apex:inputField styleClass="input-field-width" value="{!MultipleAnnaiSummary.RenewalContactPositionPrint__c}" tabOrderHint="100" />
+            <apex:inputField styleClass="input-field-width" value="{!MultipleAnnaiSummary.RenewalAddressLine2Print__c}" tabOrderHint="101" />
+            <apex:inputField styleClass="input-field-width" value="{!MultipleAnnaiSummary.RenewalTantoshyaPrint__c}" tabOrderHint="100" />
+            <apex:pageBlockSectionItem />
+
+            <apex:pageBlockSectionItem />
+            <apex:pageBlockSectionItem />
+
+            <apex:inputField styleClass="input-field-width" value="{!MultipleAnnaiSummary.RenewalDeliveryLocationPrint__c}" tabOrderHint="100" />
+            <apex:inputField styleClass="input-field-width" value="{!MultipleAnnaiSummary.ItemNamePrint__c}" tabOrderHint="101" />
+
+            <apex:pageBlockSectionItem />
+            <apex:pageBlockSectionItem />
+
+            <apex:inputField value="{!MultipleAnnaiSummary.RenewalOptionCustomerNameLabel__c}" required="true" tabOrderHint="199" />
+            <apex:inputField styleClass="input-field-width" value="{!MultipleAnnaiSummary.RenewalCustomerNameReply__c}" tabOrderHint="199" />   
+            <apex:inputField styleClass="input-field-width" value="{!MultipleAnnaiSummary.RenewalTopSectionText__c}" tabOrderHint="199" /> 
+            <apex:inputField styleClass="input-field-width" value="{!MultipleAnnaiSummary.RenewalFooterComment__c}" tabOrderHint="199" />
+
+            <apex:inputField value="{!MultipleAnnaiSummary.RenewalOptionDateFormat__c}" required="true" tabOrderHint="199" />
+            <apex:inputField styleClass="input-field-width" value="{!MultipleAnnaiSummary.RenewalOptionHideChangeInfo__c}" tabOrderHint="199" />
+
+            <!-- Start: RenewalListOptions -->
+            <apex:pageBlockSectionItem id="optionSection">
+              <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.RenewalListOptions__c.Label}" />
+              <apex:pageBlockTable value="{!lsOptions}" var="optionRow" html-tabIndex="1990" >
+                             
+                  <apex:column width="30px">
+                      <apex:inputField value="{!optionRow.TechnicalAlwaysFalse__c}"/>
+                  </apex:column>
+                  <apex:column headerValue="{!$ObjectType.MaintenanceContractManagement__c.fields.RenewalListOptions__c.Label}">
+                      <apex:outputField value="{!optionRow.Label__c}" />
+                  </apex:column>
+
+                  <apex:column width="30px">
+                       <apex:commandButton value="▲" action="{!optionMoveUp}" rerender="refreshblock" style="padding-right: 5px; padding-left: 1px;" rendered="{!optionRow.SortNo__c > 0}">
+                           <apex:param name="indiceOption" assignto="{!indiceOption}" value="{!optionRow.SortNo__c}"/>
+                       </apex:commandButton>
+                  </apex:column>
+
+                  <apex:column width="30px">
+                       <apex:commandButton value="▼" action="{!optionMoveDown}" rerender="refreshblock" style="padding-right: 5px; padding-left: 1px;" rendered="{!optionRow.SortNo__c < nbOption - 1}">
+                           <apex:param name="indiceOption" assignto="{!indiceOption}" value="{!optionRow.SortNo__c}"/>
+                       </apex:commandButton>
+                  </apex:column>
+                              
+              </apex:pageBlockTable>
+            </apex:pageBlockSectionItem>
+            <!-- End: RenewalListOptions-->
+
+            <apex:inputField value="{!MultipleAnnaiSummary.RenewalPrintDate__c}" tabOrderHint="199" />
+
+            <apex:pageBlockSectionItem rendered="{!!HidePicklistAnnai}"/>
+            <apex:pageBlockSectionItem rendered="{!!HidePicklistAnnai}"/>
+            <apex:inputField value="{!MultipleAnnaiSummary.AnnaiType__c}" rendered="{!!HidePicklistAnnai}" required="true" tabOrderHint="199" />
+
+        </apex:pageBlockSection>
+        
+
+        <apex:pageBlockButtons location="bottom" >    
+            <script>
+                function openPrintWindow() {
+                    window.open('{!PrintUrl}',"_blank","width=960,height=600,resizable=no,toolbar=no,location=no,menubar=no,status=no,scrollbars=yes");
+                }
+            </script>
+            
+            <apex:commandLink rendered="{!!IsPrintForbidden}" value="{!$Label.JEOL_MaintMultGuid_Message_PrintMultipleGuidance}" styleClass="button_green" action="{!PrintSogoAnnai1}" oncomplete="PrintSogoAnnai2_JS();" style="text-decoration: none;" onclick="showWaitPanel();" tabindex="1990" />
+            <apex:actionFunction action="{!PrintSogoAnnai2}" name="PrintSogoAnnai2_JS" oncomplete="hideWaitPanel();openPrintWindow();" rerender="attachmentList" />
+        </apex:pageBlockButtons>
+    
+    </apex:pageBlock>
+
+              
+  </apex:form>
+</apex:page>

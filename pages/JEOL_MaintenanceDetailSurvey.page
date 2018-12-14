@@ -1,0 +1,75 @@
+<apex:page standardController="MaintenanceContractManagement__c" extensions="JEOL_MaintenanceDetailCtrl" >
+
+    <script>function setFocusOnLoad() {}</script>
+
+    <style>
+        .bgcolor-orange {
+            background-color: #F5B027 !important;
+        }
+    </style>
+
+    <apex:form >
+
+        <apex:pageMessages escape="false" />
+
+        <apex:pageBlock title="{!$Label.JEOL_MaintDetail_RenewalPipeline}・納入アンケート" rendered="{!so != NULL}">
+
+            <apex:pageBlockButtons >
+                <apex:commandButton action="{!saveSurvey}" tabindex="3000" value="{!$Label.JEOL_MaintDetail_Save}" />
+                <apex:commandButton action="{!cancel}" tabindex="3000" value="{!$Label.JEOL_MaintDetail_Cancel}" />
+            </apex:pageBlockButtons>
+
+            <!-- 基本情報 section -->
+            <apex:pageBlockSection title="基本情報" columns="2">
+                <apex:outputField value="{!so.Name}" />
+                <apex:pageBlockSectionItem />
+
+
+                <!-- UNIT BODY & MODEL -->
+                <apex:outputField value="{!so.UnitBody__c}" />
+                <apex:outputField value="{!so.UnitBody__r.Model__c}" />
+
+                <!-- 見積書 -->
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrQuotation__c.label}" />
+                    <apex:outputLink value="{!$Page.JEOL_QuotationEditorPage + '?id=' + so.NewOdrQuotation__c}" rendered="{!so.NewOdrQuotation__c != null}">
+                        <apex:outputText value="{!IF(ISBLANK(so.NewOdrQuotation__r.QuoteNo__c), '_', so.NewOdrQuotation__r.QuoteNo__c)}" />
+                        <apex:outputText value=" / " />
+                        <apex:outputText value="{!IF(ISBLANK(so.NewOdrQuotation__r.BranchNo__c), '_', so.NewOdrQuotation__r.BranchNo__c)}" />
+                    </apex:outputLink>
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem />
+
+                <apex:outputField value="{!so.NewOdrSalesAccount__c}" />
+                <apex:outputField value="{!so.NewOdrShipmentAccount__c}" />
+
+            </apex:pageBlockSection>
+            
+            
+
+            <!-- 納入アンケート結果 section -->
+            <apex:pageBlockSection title="納入アンケート結果" rendered="{!so.PreviousYearOrder__c == null}">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="返却" />
+                    <apex:inputField value="{!so.InquiryRepayment__c}" tabOrderHint="299" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="保守可能性" />
+                    <apex:inputField value="{!so.InquiryMaintenancePossibity__c}" tabOrderHint="299" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="価格表" />
+                    <apex:inputField value="{!so.InquiryPriceList__c}" tabOrderHint="299" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="見積書" />
+                    <apex:inputField value="{!so.InquiryQuotation__c}" tabOrderHint="299" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>             
+                </apex:pageBlockSectionItem>    
+            </apex:pageBlockSection>
+
+        </apex:pageBlock>
+
+    </apex:form>
+
+</apex:page>

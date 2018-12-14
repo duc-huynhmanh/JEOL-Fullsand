@@ -1,0 +1,436 @@
+<apex:page docType="html-5.0" controller="JEOL_SupportListViewCtrl">
+    <apex:stylesheet value="{!URLFOR($Resource.SearchBaseCss)}" />
+  <apex:stylesheet value="{!URLFOR($Resource.JQueryUI, 'JQueryUI/jquery-ui.min.css')}" />
+  <apex:includeScript value="{!URLFOR($Resource.JQuery)}" />
+ 
+  <style>
+    .input{
+        font-size:14px;
+        font-family:;
+        border: 1px solid #989c9d;
+        border-radius:5px;
+        padding: 3px 5px;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+        width: 150px;
+        height: 12px;
+    }
+
+    .jeol_wait_panel {
+        left: auto !important;
+    }
+    .record-list {
+        margin-left: 0px;
+    }
+    #searchPanel {
+      margin-left: 0px;
+    }
+    .screenname {
+      margin-left: 0px;
+    }
+    .fakeContainer {
+        width:994px;
+    }
+    .record-list {
+        width: 994px;
+        margin-right: 0px;
+    }
+    .tabstyle {
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    .labelComponent{
+      padding-top: 3px;
+      padding-right: 5px;
+      padding-bottom: 5px;
+      padding-left: 3px;
+    }
+
+    .label{
+      padding-top: 3px;
+      padding-right: 15px;
+      padding-bottom: 5px;
+      padding-left: 3px;
+      font-size: 15pt;
+    }
+
+    .item-label{
+      display:inline-block;
+      margin-left: 40px;
+      width:140px;
+      font-size: 10.5pt;
+      padding-top: 1px;
+      padding-right: 15px;
+      padding-left: 3px;
+    }
+        
+    .clm00 { width: 130px;}
+    .clm01 { width: 130px;}
+    .clm02 { width: 130px;}
+    .clm03 { width: 130px;}
+    .clm04 { width: 212px;} 
+    .clm05 { width: 130px;}
+    .clm06 { width: 130px;} 
+    .clm07 { width: 130px;} 
+    .clm08 { width: 84px;}
+    .clm09 { width: 80px;}
+    .clm10 { width: 80px;}
+    
+  </style>
+     <apex:form style="width: 994px; margin-left: auto; margin-right: auto;">
+        <c:JEOL_WaitSearchPanel text="{!$Label.JEOL_MaintSVCHistory_Label_Searching}"/>
+
+          <apex:outputPanel id="order">
+            <apex:inputText id="orderBy" styleClass="orderInput" value="{!orderBy}" style="display: none;" />
+            <apex:actionFunction name="changeOrder" action="{!changeOrder}" oncomplete="mode();hideWaitPanel();" rerender="searchResult, pageMessages" />
+          </apex:outputPanel>
+
+         <div class="screenname">
+             <img src="{!URLFOR($Resource.Images, 'images/icons/title_icon_orderplan.png')}" align="left" width="40px" />
+             <span id="title">{!$Label.JEOL_MaintSVCHistory_Label_SVCHistory}</span>
+         </div>
+        <div id="searchPanel">
+          <div>
+            <img id="close_icon" src="{!URLFOR($Resource.Images, 'images/searchPageImage/btn_close.png')}" align="left" valign="top" width="36px" onclick="hideSearchCriteriaPanel()"/>
+            <img id="open_icon" src="{!URLFOR($Resource.Images, 'images/searchPageImage/btn_open.png')}" align="left" valign="top" width="36px" onclick="showSearchCriteriaPanel()"/>
+            <div id="serch_title">{!$Label.JEOL_MaintSVCHistory_Label_SVCHistory}</div>
+          </div>
+          <div id="search_criteria">
+            <apex:outputPanel layout="block" id="search_criteria_form">
+              <table id="search_criteria_table" class="search_criteria_table">
+                <tr>
+                  <td class="labelComponent">
+                      <div class="item-label">
+                        <apex:outputText value="{!$Label.JEOL_MaintSVCHistory_Label_UnitBody}"/>
+                      </div>
+                      <apex:inputText value="{!unitBodyName}" rendered="{!isUnitBodyFieldDisable == False}" html-class="inputText-unitBodyName"  styleClass="input"/>
+                      <apex:outputLabel value="{!unitBodyName}" rendered="{!isUnitBodyFieldDisable == True}" html-class="outputLabel-unitBodyName"/>
+                  </td>
+
+                  <td></td>
+                  
+                  <td class="labelComponent">
+                      <div class="item-label">
+                        <apex:outputText value="{!$Label.JEOL_MaintSVCHistory_Label_Period}"/>
+                      </div>
+                      <apex:input type="date" value="{!startDateTimeFrom}" styleClass="input"/>
+                      <apex:outputText value=" ~ " />
+                      <apex:input type="date" value="{!startDateTimeTo}" styleClass="input"/>
+                  </td>
+                </tr>
+
+                <tr></tr>
+
+                <tr>
+                  <td class="labelComponent">
+                    <div class="item-label">
+                      <apex:outputText value="{!$Label.JEOL_MaintSVCHistory_Label_CustomerContactPerson}"/>
+                    </div>
+                    <apex:inputText value="{!customerContactPerson}" styleClass="input"/>
+                  </td>
+
+                  <td></td>
+                    
+                  <td class="labelComponent">
+                    <div class="item-label">
+                      <apex:outputText value="{!$Label.JEOL_MaintSVCHistory_Label_ServiceEndDate_Period}"/>
+                    </div>
+                      <apex:input type="date" value="{!endDateTimeFrom}" styleClass="input"/>
+                      <apex:outputText value=" ~ " />
+                      <apex:input type="date" value="{!endDateTimeTo}" styleClass="input"/>
+                  </td>
+                </tr>
+
+                <tr></tr>
+
+                <tr>
+                  <td class="labelComponent">
+                  <div class="item-label">
+                    <apex:outputText value="{!$Label.JEOL_MaintSVCHistory_Label_SecondSupportPerson}"/>
+                  </div>
+                    <apex:inputText value="{!secondSupportPerson}" styleClass="input"/>
+                  </td>
+                </tr>
+              </table>
+          <div id="buttons">
+            <apex:commandLink value="{!$Label.JEOL_MaintSVCHistory_Label_Clear}" styleClass="button_white" action="{!doClear}" rerender="search_criteria_form, searchResult" style="text-decoration: none;" />
+            <apex:commandLink value="{!$Label.JEOL_MaintSVCHistory_Label_Search}" styleClass="button_green" action="{!doSearch}" rerender="search_criteria_form, searchResult" onclick="showWaitPanel();" oncomplete="hideWaitPanel();" style="text-decoration: none;"/> 
+            <!--<apex:commandLink value="{!$Label.JEOL_MaintSVCHistory_Label_Report}" styleClass="button_green" action="{!doRunReport}" rerender="search_criteria_form, searchResult" style="text-decoration: none;" onclick="showWaitPanel();" oncomplete="hideWaitPanel();" />-->
+            <apex:commandLink value="{!$Label.JEOL_MaintSVCHistory_Label_OHPeriod_Report}" styleClass="button_green" action="{!doRunReport1}" rerender="search_criteria_form, searchResult" style="text-decoration: none;" onclick="showWaitPanel();" oncomplete="hideWaitPanel();window.open('{!reportUrl}');" target="_blank" />
+            <apex:commandLink value="{!$Label.JEOL_MaintSVCHistory_Label_OHUsedParts_Report}" styleClass="button_green" action="{!doRunReport2}" rerender="search_criteria_form, searchResult" style="text-decoration: none;" onclick="showWaitPanel();" oncomplete="hideWaitPanel();window.open('{!reportUrl}');" target="_blank" />
+            <apex:commandLink value="{!$Label.JEOL_MaintSVCHistory_Label_OHAmount_Report}" styleClass="button_green" action="{!doRunReport3}" rerender="search_criteria_form, searchResult" style="text-decoration: none;" onclick="showWaitPanel();" oncomplete="hideWaitPanel();window.open('{!reportUrl}');" target="_blank" />              
+          </div>
+        </apex:outputPanel>
+      </div>
+    </div>
+    <apex:outputPanel layout="block" id="searchResult" >
+      <apex:pageMessages id="pageMessages" />
+      <apex:outputPanel rendered="{!SupportContracts.size > 0}">
+          <table class="record-list" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-bottom:0px;">
+              <col class="clm00" />
+              <col class="clm01" />
+              <col class="clm02" />
+              <col class="clm03" />
+              <col class="clm04" />
+              <col class="clm05" />
+              <col class="clm06" />
+              <tr class="contents_title">
+                <td colspan="7">
+                  <div class="in_contents_title">{!$Label.JEOL_MaintSVCHistory_Label_SVCHistory}</div>
+                </td>
+              </tr>
+              <!-- 一覧のヘッダー -->
+              <tr class="koumoku">
+              <!--    
+              <tr class="contents_title">
+                  <div class="in_contents_title">{!$Label.JEOL_MaintSVCHistory_Label_UnitBody}</div>
+              </tr>
+              <tr class="contents_title">
+            -->
+                <apex:variable var="var-tableHeader-UnitBodyName" value="" rendered="{!isUnitBodyFieldDisable == False}">
+                  <th class="tableHeader-UnitBodyName">
+                    <a href="javascript:void(0);" onclick="callChangeOrder('Support__r.UnitBody__c'); showWaitPanel();">
+                      <apex:outputText >{!$Label.JEOL_MaintSVCHistory_Label_UnitBody}</apex:outputText>
+                      <apex:outputText rendered="{!orderBy=='Support__r.UnitBody__c' && (!orderDesc)}">△</apex:outputText>
+                      <apex:outputText rendered="{!orderBy=='Support__r.UnitBody__c' && orderDesc}">▽</apex:outputText>
+                    </a>
+                  </th>
+                </apex:variable>                 
+                <th>
+                  <a href="javascript:void(0);" onclick="callChangeOrder('Support__r.Name'); showWaitPanel();">
+                    <apex:outputText >{!$Label.JEOL_MaintSVCHistory_Label_ReceptionNo}</apex:outputText>               <apex:outputText rendered="{!orderBy=='Support__r.Name' && (!orderDesc)}">△</apex:outputText>
+                    <apex:outputText rendered="{!orderBy=='Support__r.Name' && orderDesc}">▽</apex:outputText>
+                  </a>
+                </th>
+                <th>
+                  <a href="javascript:void(0);" onclick="callChangeOrder('StartDate__c'); showWaitPanel();">
+                    <apex:outputText >{!$Label.JEOL_MaintSVCHistory_Label_ReceptionDate}</apex:outputText>
+                    <apex:outputText rendered="{!orderBy=='StartDate__c' && (!orderDesc)}">△</apex:outputText>
+                    <apex:outputText rendered="{!orderBy=='StartDate__c' && orderDesc}">▽</apex:outputText>
+                  </a>
+                </th>
+                <th>
+                  <a href="javascript:void(0);" onclick="callChangeOrder('EndDate__c'); showWaitPanel();">
+                    <apex:outputText >{!$Label.JEOL_MaintSVCHistory_Label_ServiceEndDate}</apex:outputText>
+                    <apex:outputText rendered="{!orderBy=='EndDate__c' && (!orderDesc)}">△</apex:outputText>
+                    <apex:outputText rendered="{!orderBy=='EndDate__c' && orderDesc}">▽</apex:outputText>
+                  </a>                   
+                </th>
+                <th>
+                  <a href="javascript:void(0);" onclick="callChangeOrder('Memo__c'); showWaitPanel();">
+                    <apex:outputText >{!$Label.JEOL_MaintSVCHistory_Label_Subject}</apex:outputText>
+                    <apex:outputText rendered="{!orderBy=='Memo__c' && (!orderDesc)}">△</apex:outputText>
+                    <apex:outputText rendered="{!orderBy=='Memo__c' && orderDesc}">▽</apex:outputText>
+                  </a>  
+                </th>
+                <th>
+                      <a href="javascript:void(0);" onclick="callChangeOrder('PeriodSummary__c'); showWaitPanel();">
+                      <apex:outputText >{!$Label.JEOL_MaintSVCHistory_Label_Duration}</apex:outputText>
+                      <apex:outputText rendered="{!orderBy=='PeriodSummary__c' && (!orderDesc)}">△</apex:outputText>
+                      <apex:outputText rendered="{!orderBy=='PeriodSummary__c' && orderDesc}">▽</apex:outputText>
+                    </a>
+                </th>
+                <!--
+                <th>
+                      <a href="javascript:void(0);" onclick="callChangeOrder(''); showWaitPanel();">
+                      <apex:outputText >{!$Label.JEOL_MaintSVCHistory_Label_Amount}</apex:outputText>
+                      <apex:outputText rendered="{!orderBy=='' && (!orderDesc)}">△</apex:outputText>
+                      <apex:outputText rendered="{!orderBy=='' && orderDesc}">▽</apex:outputText>
+                    </a> 
+                </th> -->
+                <th>
+                    <apex:outputText >{!$Label.JEOL_MaintSVCHistory_Label_UsedParts}</apex:outputText>
+                    <!--
+                  <a href="javascript:void(0);" onclick="callChangeOrder('UsedPartsSummary__c'); showWaitPanel();">
+                    <apex:outputText >{!$Label.JEOL_MaintSVCHistory_Label_UsedParts}</apex:outputText>
+                    <apex:outputText rendered="{!orderBy=='UsedPartsSummary__c' && (!orderDesc)}">△</apex:outputText>
+                    <apex:outputText rendered="{!orderBy=='UsedPartsSummary__c' && orderDesc}">▽</apex:outputText>
+                  </a>
+                    -->
+                </th>
+            </tr>
+            </table>
+            <div class="fakeContainer" style="margin-top:0px; margin-bottom:0px;">
+            <table id="viewTable" class="record-list" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-top:0px; margin-bottom:0px;">
+                <col class="clm00" />
+                <col class="clm01" />
+                <col class="clm02" />
+                <col class="clm03" />
+                <col class="clm04" />
+                <col class="clm05" />
+                <col class="clm06" />
+                <apex:repeat value="{!SupportContracts}" var="contract">
+              <tr class="contents">
+
+                <apex:variable var="var-tableContent-UnitBodyName" value="" rendered="{!isUnitBodyFieldDisable == False}">
+                  <td class="tableContent-UnitBodyName">
+                    <apex:outputText value="{!contract.Support__r.UnitBody__c}"/> 
+                  </td>
+                </apex:variable>
+
+
+                <td>
+                  <apex:outputLink value="{!'/' + contract.Support__c}" >
+                    <apex:outputText value="{!contract.Support__r.Name}" />
+                  </apex:outputLink>  
+                </td>
+
+                <td>
+                  <apex:outputText value="{0, date, yyyy/MM/dd}"> 
+                    <apex:param value="{!contract.StartDate__c}"/></apex:outputText>
+                </td>
+
+                <td>
+                  <apex:outputText value="{0, date, yyyy/MM/dd}"> 
+                    <apex:param value="{!contract.EndDate__c}"/></apex:outputText>
+                </td>
+
+                <td>
+                  <apex:outputText value="{!contract.Memo__c}"/>
+                </td>
+                <td>
+                  <apex:outputText value="{!contract.PeriodSummary__c}"/>
+                </td>
+                <!-- <td><apex:outputText ></apex:outputText></td> -->
+                <td>
+                  <apex:outputText value="{!amountSummaryMap[contract.Id]}"/>
+                </td>
+              </tr>
+            </apex:repeat>
+          </table>
+          </div>
+
+          <!-- ページ遷移欄-->
+        <table class="record-list" border="1" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-top:0px; margin-bottom:0px;">
+          <col class="clm00" />
+          <col class="clm01" />
+          <col class="clm02" />
+          <col class="clm03" />
+          <col class="clm04" />
+          <col class="clm05" />
+          <col class="clm06" />
+          <apex:variable value="{!SupportContracts.size}" var="size" />
+          <tr class="menu">
+            <td colspan="7" style="padding: 0;">
+              <table id="each_menu">
+                <tr>
+                  <td align="left" width="33%" style="border: 0px; vertical-align: middle;" >
+                    <apex:outputPanel rendered="{!ssc.PageSize != null}">
+                      <apex:outputText value="{!(ssc.PageNumber - 1) * ssc.PageSize + 1} - {!(ssc.PageNumber - 1) * ssc.PageSize + size}/{!ssc.ResultSize}" />
+                    </apex:outputPanel>
+                    <apex:outputText value="     {!$Label.JEOL_MaintSVCHistory_Label_ShowBefore}" />
+                    <!-- <apex:selectList id="pageSize" value="{!pageSize}" size="1" disabled="{!ssc.ResultSize < 9}" > -->
+                    <apex:selectList id="pageSize" value="{!pageSize}" size="1" >
+                      <apex:actionSupport event="onchange" action="{!setSizeSaveCurrentPageSize}" rerender="searchResult" oncomplete="mode();"/>
+                      <apex:selectOption itemValue="10" itemLabel="10"/>
+                      <apex:selectOption itemValue="20" itemLabel="20"/>
+                      <apex:selectOption itemValue="50" itemLabel="50"/>
+                    </apex:selectList>
+                    <apex:outputLink value="javascript:void(0);" onclick="allViewMode();">{!$Label.JEOL_MaintSVCHistory_Label_ShowAfter}</apex:outputLink>
+                  </td>
+                  <td align="center" width="33%" style="border: 0px; vertical-align: middle ;">
+                    <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 != 1}">
+                      <apex:actionSupport event="onclick" action="{!firstAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="hideWaitPanel();mode();" />
+                      <apex:outputText value="｜◀" />
+                    </apex:outputLink>
+                    <apex:outputText value="｜◀" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 == 1}"/>
+                    <apex:outputText value=" " />
+                    <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 != 1}" >
+                      <apex:actionSupport event="onclick" action="{!previousAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="hideWaitPanel();mode();" />
+                      <apex:outputText value="◀ {!$Label.JEOL_MaintSVCHistory_Label_Previous}" />
+                    </apex:outputLink>
+                    <apex:outputText value="◀ {!$Label.JEOL_MaintSVCHistory_Label_Previous}" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 == 1}"/>
+                    <apex:outputText value=" " />
+                    <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size != ssc.ResultSize}">
+                      <apex:actionSupport event="onclick" action="{!nextAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="hideWaitPanel();mode();" />
+                      <apex:outputText value="{!$Label.JEOL_MaintSVCHistory_Label_Next} ▶" />
+                    </apex:outputLink>
+                    <apex:outputText value="{!$Label.JEOL_MaintSVCHistory_Label_Next} ▶" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size == ssc.ResultSize}"/>
+                    <apex:outputText value=" " />
+                    <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size != ssc.ResultSize}">
+                      <apex:actionSupport event="onclick" action="{!lastAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="hideWaitPanel();mode();" />
+                      <apex:outputText value="▶｜" />
+                    </apex:outputLink>
+                    <apex:outputText value="▶｜" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size == ssc.ResultSize}"/>
+                  </td>
+                  <td align="right" width="33%" style="border: 0px; vertical-align: middle ;">
+                    <apex:outputText value="{!$Label.JEOL_MaintSVCHistory_Label_Page}　" />
+                    <apex:input type="number" value="{!ssc.PageNumber}" size="2" style="width: 40px;" disabled="{!ssc.PageSize == 0}">
+                      <apex:actionSupport event="onchange" action="{!setJumpSaveCurrentPageSize}" rerender="searchResult" oncomplete="mode();"/>
+                    </apex:input>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+        <!-- ページ遷移欄-->
+        </apex:outputPanel>
+         <!-- 取得件数0件時メッセージ -->
+      <apex:outputpanel rendered="{!SupportContracts.size = 0}">
+        <table class="record-list" cellspacing="0" cellpadding="0" style="border-collapse: collapse">
+          <tr class="contents_title">
+            <td colspan="10">
+              <div class="in_contents_title">{!$Label.JEOL_MaintSVCHistory_Message_NoData}</div>
+            </td>
+          </tr>
+        </table>
+      </apex:outputpanel>
+    </apex:outputPanel>
+    </apex:form>
+  
+  <script type="text/javascript">
+    var $j = jQuery.noConflict();
+    var viewFunction;
+
+     $j(document).ready(function(){
+        showSearchCriteriaPanel();
+        invokeShowOrHideUnitBodyColumn();
+    });
+
+    function mode() {
+        if ((typeof viewFunction).toLowerCase() === 'function') {
+            viewFunction();
+        }
+    }
+
+    function callChangeOrder(key) {
+        var obj = $j('.orderInput');
+        obj.val(key);
+        changeOrder();
+    }
+
+    function hideSearchCriteriaPanel() {
+        $j("#open_icon").show();
+        $j("#close_icon").hide();
+        $j("#search_criteria").slideUp(500);
+        $j(".fakeContainer").animate({height: $j("#search_criteria").height() + 250 + 'px'},500);
+        viewFunction = hideSearchCriteriaPanel;
+    }
+
+    function showSearchCriteriaPanel() {
+        $j("#open_icon").hide();
+        $j("#close_icon").show();
+        $j("#search_criteria").slideDown(500);
+        $j(".fakeContainer").animate({height: '250px'},500);
+        viewFunction = showSearchCriteriaPanel;
+    }
+
+    function allViewMode() {
+        $j("#open_icon").show();
+        $j("#close_icon").hide();
+        $j("#search_criteria").slideUp(500);
+        $j(".fakeContainer").animate({height: $j('#viewTable').height() + 'px'},500);
+        viewFunction = allViewMode;
+    }
+    function openReport1(){      
+       window.open('/00Op0000000P4e5?pc0=072p0000000Br1X&pn0=le&pv0=2016-07-04&pc1=072p0000000Br1Y&pn1=le&pv1=2016-08-04');        
+    }   
+     function openReport2(){
+       window.open('/00Op0000000P4e5?pc0=072p0000000Br1X&pn0=le&pv0=2016-07-04&pc1=072p0000000Br1Y&pn1=le&pv1=2016-08-04');      
+    }   
+     function openReport3(){
+        window.open('/00Op0000000P4e5?pc0=072p0000000Br1X&pn0=le&pv0=2016-07-04&pc1=072p0000000Br1Y&pn1=le&pv1=2016-08-04');       
+    }   
+  </script> 
+</apex:page>

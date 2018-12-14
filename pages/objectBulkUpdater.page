@@ -1,0 +1,414 @@
+<apex:page id="objectBulkUpdatePage" title="データ一括処理" label="データ一括処理" controller="objectBulkUpdateController" action="{!init}" tabstyle="objectBulkUpdate__tab" cache="false">
+
+<apex:includeScript value="{!URLFOR($Resource.jquery_resizable, 'dist/jquery.min.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.jquery_resizable, 'dist/jquery.resizableColumns.min.js')}" />
+<apex:stylesheet value="{!URLFOR($Resource.jquery_resizable, 'dist/jquery.resizableColumns.css')}" />
+
+<apex:sectionHeader title="データ一括処理" />
+<apex:pageMessages id="messagearea" showDetail="false" />
+<apex:outputPanel id="objectSelectArea">
+
+    <apex:form id="objectForm">
+        <apex:pageBlock id="objectBlock" title="オブジェクトを選択">
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton value="選択" action="{!doSelectObject}" rerender="fieldForm"  onclick="if(getElementById('{!$Component.objectBlock.objects}').selectedIndex < 0){alert('オブジェクトを選択してください'); return false; }"/>
+            </apex:pageBlockButtons>
+
+            <apex:outputPanel layout="block" style="padding: 10px;">
+                <apex:outputLabel value="オブジェクト名で絞り込み" for="objSearch" />：<input type="text" id="objSearch" />　<apex:commandButton id="doObjSearch" value="検索" onclick="doObjSearch(); return false;" />　<apex:commandButton id="clearObjSearch" value="クリア" onclick="clearObjSearch(); return false;" />
+            </apex:outputPanel>
+
+            <apex:selectList id="objects" size="7" multiselect="false" value="{!dto.objKey}">
+                <apex:selectOptions id="selectObj" value="{!objects}" />
+            </apex:selectList>
+        
+<script type="text/javascript">
+    function doObjSearch () {
+        var osi = document.getElementById("objSearch");
+        var selectbox = document.getElementById("{!$Component.objectBlock.objects}");
+        var queryReg = new RegExp(osi.value);
+        for(var i = 0; i < selectbox.options.length; i++) {
+            selectbox.options[i].style.display =
+                (!queryReg.test(selectbox.options[i].innerHTML)) ? "none": "block";
+        }
+        return false;
+    }
+
+    function clearObjSearch () {
+        var osi = document.getElementById("objSearch");
+        var selectbox = document.getElementById("{!$Component.objectBlock.objects}");
+        for(var i = 0; i < selectbox.options.length; i++) {
+            selectbox.options[i].style.display = "block";
+        }
+        osi.value = '';
+        return false;
+    }
+</script>
+
+        </apex:pageBlock>
+    </apex:form>
+
+    <apex:form id="fieldForm">
+        <apex:pageBlock id="fieldBlock" title="検索・表示項目を選択" rendered="{!dto.isObjectSelected}">
+            <apex:pageBlockButtons location="bottom">
+               <apex:commandButton value="選択" action="{!doGenerateSearchCriteriaForm}" rerender="searchForm" onclick="
+               if (document.getElementById('objFields').options.length === 0 || (document.getElementById('objFields').options.length === 1 && document.getElementById('objFields').options[0].value === '--なし--')) {
+                alert('項目を選択してください'); 
+                return false; 
+                } 
+                else { selectedToHidden(); }"/>
+            </apex:pageBlockButtons>
+
+            <apex:outputPanel layout="block" style="padding: 10px;">
+                <apex:outputLabel value="項目名で絞り込み" for="fieldSearch" />：<input type="text" id="fieldSearch" />　<apex:commandButton id="doFieldSearch" value="検索" onclick="doFieldSearch(); return false;" />　<apex:commandButton id="clearFieldSearch" value="クリア" onclick="clearFieldSearch(); return false;" />
+            </apex:outputPanel>
+            <apex:outputPanel id="multiselectPanel" layout="block" styleClass="duelingListBox">
+                <table class="layout">
+                    <tr>
+                        <td class="selectCell">
+                            <apex:outputPanel layout="block" styleClass="selectTitle">
+                                <apex:outputLabel value="選択可能な項目" />
+                            </apex:outputPanel>
+                            <select multiple="multiple" id="select_0" size="7" style="width: 150px;">
+                                <apex:repeat value="{!fields}" var="opt">
+                                    <option value="{!opt.value}">{!opt.label}</option>
+                                </apex:repeat>
+                            </select>
+                        </td>
+                        <td class="zen-phs buttonCell">
+                            <div class="text">追加</div>
+                            <div class="zen-mbs text">
+                                <a href="" onclick="moveOption(document.getElementById('select_0'), document.getElementById('objFields'), '--なし--', [], null, '--なし--', false, null);return false;"><img src="/s.gif" alt="追加" class="rightArrowIcon" title="追加" /></a>
+                            </div>
+                            <div class="zen-mbs text">
+                                <a href="" onclick="moveOption(document.getElementById('objFields'), document.getElementById('select_0'), '--なし--', [], null, '--なし--', false, null);return false;"><img src="/s.gif" alt="削除" class="leftArrowIcon" title="削除" /></a>
+                            </div>
+                            <div class="text">削除</div>
+                        </td>
+                        <td>
+                            <apex:outputPanel layout="block" styleClass="selectTitle">
+                                <apex:outputLabel value="選択済みの項目" />
+                            </apex:outputPanel>
+                            <select multiple="multiple" id="objFields" size="7" style="width: 150px;">
+                            </select>
+                            <apex:inputHidden id="selectedHidden" value="{!selectedHidden}" />
+                        </td>
+                        <td class="zen-phs buttonCell">
+                            <div class="text">上へ</div>
+                            <a href="" onclick="moveUp(document.getElementById('objFields')); return false;"><img src="/s.gif" alt="上へ" class="upArrowIcon" title="上へ" /></a><br />
+                            <a href="" onclick="moveDown(document.getElementById('objFields')); return false;"><img src="/s.gif" alt="下へ" class="downArrowIcon" title="下へ" /></a><br />
+                            <div class="text">下へ</div>
+                        </td>
+                    </tr>
+                </table>
+            </apex:outputPanel>
+<script type="text/javascript">
+    var target = document.getElementById("objFields");
+    var hidden = document.getElementById("{!$Component.fieldBlock.selectedHidden}");
+    window.onload = function () {
+        var source = document.getElementById("select_0");
+        var values = hidden.value.split(",");
+        for(var i = 0; i < values.length; i++) {
+            for(var j = 0; j < source.options.length; j++) {
+                if(values[i] === source.options[j].value) {
+                    source.options[j].selected = true;
+                    moveOption(source, target, '--なし--', [], null, '--なし--', false, null);
+                }
+            }
+        }
+    };
+
+    function doFieldSearch () {
+        var fsb = document.getElementById("{!$Component.fieldBlock.doFieldSearch}");
+        var fsi = document.getElementById("fieldSearch");
+        var selectable = document.getElementById("select_0");
+        var queryReg = new RegExp(fsi.value);
+        for(var i = 0; i < selectable.options.length; i++) {
+            selectable.options[i].style.display =
+                (!queryReg.test(selectable.options[i].innerHTML)) ? "none": "block";
+        }
+        return false;
+    }
+
+    function clearFieldSearch () {
+        var fsi = document.getElementById("fieldSearch");
+        var selectable = document.getElementById("select_0");
+        for(var i = 0; i < selectable.options.length; i++) {
+            selectable.options[i].style.display = "block";
+        }
+        fsi.value = '';
+        return false;
+    }
+
+    function selectedToHidden () {
+        var result = new Array();
+        for(var i = 0; i < target.options.length; i++) {
+            if(!target.options[i].value || target.options[i].value === '--なし--') continue;
+            result.push(target.options[i].value);
+        }
+        if({!dto.isPersonAccountFlg}) result.push('IsPersonAccount');  // 2017-03-add 個人取引先の場合の処理
+        hidden.value = result.join(",");
+    }
+</script>
+
+        </apex:pageBlock>
+    </apex:form>
+
+    <apex:form id="searchForm">
+        <apex:pageBlock id="searchBlock" title="検索条件" rendered="{!dto.isFieldSelected}">
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton value="検索" action="{!doSearch}" onclick=" selectedToHiddenOpe(); "/>
+                <apex:commandButton value="検索結果のみを表示する" action="{!doSearchOnlyResult}" onclick=" selectedToHiddenOpe(); "/>
+            </apex:pageBlockButtons>
+            <apex:outputPanel layout="block" title="検索条件">
+                <apex:dataTable id="searchTable" value="{!dto.fieldKeys}" var="key">
+                    <apex:column style="padding: 5px;">
+                        <apex:outputLabel value="{!dto.fieldNames[key]}" />
+                    </apex:column>
+                    <apex:column style="padding: 5px;">
+                        <apex:selectList size="1" multiselect="false" value="{!dto.fieldSerchKeys[key]}" id="fieldSerchOpe">
+                            <apex:selectOptions value="{!fieldSerchOpeList[key]}" />
+                        </apex:selectList>
+                    </apex:column>
+                    <apex:column style="padding: 5px;">
+                        <apex:inputField value="{!dto.obj[key]}" required="false" rendered="{!!dto.fieldEditFlgs[key]||!!dto.fieldPicklistFlgs[key]}" />
+                        <apex:inputText value="{!dto.fieldUnEditValues[key]}" required="false" rendered="{!!dto.fieldEditFlgs[key]}" />
+                        <apex:inputText value="{!dto.obj[key]}" required="false" rendered="{!!dto.fieldPicklistFlgs[key]}" />
+                    </apex:column>
+                </apex:dataTable>
+                <apex:outputPanel rendered="{!dto.isPersonAccountFlg}" layout="block" style="padding-bottom: 10px;font-size:12px;">
+                <p style="margin: 3px;">　※個人取引先が有効になっているため、「個人取引先」項目が自動で選択されています。</p>
+                <p style="margin: 3px;">　※個人取引先が有効になっているため、「レコードタイプ」項目は選択できません。</p>
+                </apex:outputPanel>
+                <apex:inputHidden id="selectedHiddenOpe" value="{!selectedHiddenOpe}" />
+            </apex:outputPanel>
+
+            <div class="pbHeader" style="margin-bottom: 20px;">
+                <table border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td class="pbTitle"><h2 class="mainTitle">ソート条件</h2></td>
+                        <td>&nbsp;</td>
+                    </tr>
+                </table>
+            </div>
+            <apex:outputPanel layout="block" title="ソート条件">
+                <table>
+                    <tr>
+                        <td>
+                            <apex:selectList size="1" multiselect="false" value="{!dto.sortField}">
+                                <apex:selectOptions value="{!sortFields}" />
+                            </apex:selectList>
+                        </td>
+                        <td>
+                            <apex:selectList value="{!dto.sortOrder}" size="1">
+                                <apex:selectOptions value="{!sortOrders}" />
+                            </apex:selectList>
+                        </td>
+                    </tr>
+                </table>
+            </apex:outputPanel>
+
+<script type="text/javascript">
+    function selectedToHiddenOpe () {
+        var hiddenOpeTableId ='objectBulkUpdatePage:searchForm:searchBlock:searchTable';
+        var hiddenOpeTable = document.getElementById(hiddenOpeTableId);
+        var hiddenOpe = document.getElementById("{!$Component.searchBlock.selectedHiddenOpe}");
+        var opResults = new Array();
+        for(var i = 0; i < hiddenOpeTable.rows.length; i++) {
+            opResults.push(document.getElementById(hiddenOpeTableId+':'+i+':fieldSerchOpe').value);
+        }
+        hiddenOpe.value = opResults.join(",");
+    }
+</script>
+
+        </apex:pageBlock>
+    </apex:form>
+
+</apex:outputPanel>
+
+<script type="text/javascript">
+    function toggleAllCheckbox (e) {
+        var state = e.target.checked;
+        var dataRows = document.getElementsByClassName('dataRow'); // 表示データ数
+        var inputFieldresultId = 'objectBulkUpdatePage:result:resultBlock:resultListId';
+        for(var i = 0; i < dataRows.length; i++) {
+            document.getElementById(inputFieldresultId+':'+i+':dataCheckBox').checked = state;
+        }
+    }
+
+    function checkExport (e) {
+        var inputs = document.getElementsByTagName('input');
+        var flg = true;
+        for(var i = 0; i < inputs.length; i++) {
+            if(inputs[i].type === "checkbox" && inputs[i].checked === true){
+                flg = false;
+                break;
+            }
+        }
+        if(flg){
+            (event.preventDefault) ? event.preventDefault():event.returnValue=false;
+            alert('出力するデータにチェックを付けてください');
+        } 
+    }
+
+    function changeCheckBox (e,id) {
+        var inputFieldresultId = 'objectBulkUpdatePage:result:resultBlock:resultListId';
+        var eId         = id;
+        var eIdSplit    = eId.split(":");
+        var eNum        = eIdSplit[4]; // 変更したデータの表示データの番号
+        var dataRow     = document.getElementsByClassName('dataRow'); // 表示データ数
+        var changeArray = []; // 変更するデータの番号の配列
+        var checkedNum  = 0;  // チェックされたデータ数
+        document.getElementById(inputFieldresultId+':'+eNum+':dataCheckBox').checked = true;
+        var changeId = '';
+        for(var j = 0; j < eIdSplit.length; j++){
+            if(j == 4)                      changeId += eNum + ":";
+            else if(j+1 == eIdSplit.length) changeId += eIdSplit[j];
+            else                            changeId += eIdSplit[j] + ":";
+        }
+        if(document.getElementById(changeId).parentNode.tagName == "TD"){
+            document.getElementById(changeId).parentNode.bgColor = "#fffacd";
+        }
+        else{
+            document.getElementById(changeId).parentNode.parentNode.bgColor = "#fffacd";
+        }
+        for(var i = 0; i < dataRow.length; i++) {
+            // 変更するデータの番号の配列にpushし、チェックされたデータ数をカウントアップ
+            if(document.getElementById(inputFieldresultId+':'+i+':dataCheckBox').checked){
+                changeArray.push(i);
+                checkedNum++;
+            }
+        }
+        if(checkedNum >= 2){
+            allChackedChangeFlg = confirm("1件のみ変更の場合は「キャンセル」を押してください\n選択した"+checkedNum+"件変更の場合は「OK」を押して「更新」をしてください");
+            if(allChackedChangeFlg){
+                if(!e){ 
+                    var changevalues = document.getElementById(id).options;
+                    var changevalues_selected = [];
+                    var changevalues_unselected = [];
+                    for(var j = 0; j < changevalues.length; j++){
+                        if(changevalues[j].selected) changevalues_selected.push(changevalues[j].value);
+                        else                         changevalues_unselected.push(changevalues[j].value);
+                    }
+                }
+                else if(e.target.type != 'checkbox'){
+                    var changeValue = e.target.value; // 変更した値
+                }
+                else{
+                    var changeChecked = e.target.checked;
+                }
+                for(var i = 0; i < changeArray.length; i++){
+                    var changeId = '';
+                    for(var j = 0; j < eIdSplit.length; j++){
+                        if(j == 4)                      changeId += changeArray[i] + ":";
+                        else if(j+1 == eIdSplit.length) changeId += eIdSplit[j];
+                        else                            changeId += eIdSplit[j] + ":";
+                    }
+                    if(document.getElementById(changeId).parentNode.tagName == "TD"){
+                        document.getElementById(changeId).parentNode.bgColor = "#fffacd";
+                    }
+                    else{
+                        document.getElementById(changeId).parentNode.parentNode.bgColor = "#fffacd";
+                    }
+                    if(!e){
+                        var changevalues2 = document.getElementById(changeId).options;
+                        var changeId_selected = changeId + '_selected';
+                        var changeId_unselected = changeId + '_unselected';
+                        var changevalues2_selected = document.getElementById(changeId_selected);
+                        var changevalues2_unselected = document.getElementById(changeId_unselected);
+                        if(changevalues2_selected.childNodes[changevalues2_selected.childNodes.length-1].tagName == 'OPTION'){
+                            for(var j = changevalues2_selected.childNodes.length-1; j > 0; j--){
+                                changevalues2_selected.removeChild(changevalues2_selected.childNodes[j]);
+                             }
+                        }
+                        else{
+                            for(var j = changevalues2_selected.childNodes[0].childNodes.length-1; j >= 0; j--){
+                                changevalues2_selected.childNodes[0].removeChild(changevalues2_selected.childNodes[0].childNodes[j]);
+                            }
+                        }
+                        if(changevalues2_unselected.childNodes[changevalues2_unselected.childNodes.length-1].tagName == 'OPTION'){
+                            for(var j = changevalues2_unselected.childNodes.length-1; j > 0; j--){
+                                changevalues2_unselected.removeChild(changevalues2_unselected.childNodes[j]);
+                             }
+                        }
+                        else{
+                            for(var j = changevalues2_unselected.childNodes[0].childNodes.length-1; j >= 0; j--){
+                                changevalues2_unselected.childNodes[0].removeChild(changevalues2_unselected.childNodes[0].childNodes[j]);
+                            }
+                        }
+                        for(var j = 0; j < changevalues_selected.length; j++){
+                            var opt = document.createElement("option");
+                            opt.appendChild(document.createTextNode(changevalues_selected[j]));
+                            changevalues2_selected.appendChild(opt);
+                        }
+                        for(var j = 0; j < changevalues_unselected.length; j++){
+                            var opt = document.createElement("option");
+                            opt.appendChild(document.createTextNode(changevalues_unselected[j]));
+                            changevalues2_unselected.appendChild(opt);
+                        }
+                        for(var j = 0; j < changevalues2.length; j++){
+                            changevalues2[j].selected = changevalues[j].selected;
+                        }
+                    }
+                    else if(e.target.type != 'checkbox'){
+                       document.getElementById(changeId).value = changeValue;
+                    }
+                    else{
+                       document.getElementById(changeId).checked = changeChecked;
+                    }
+                }
+            }
+        }
+    }
+</script>
+<apex:form id="result">
+    <apex:pageBlock id="resultBlock" title="検索結果" rendered="{!dto.isSearched}">
+        <apex:pageBlockButtons >
+            <apex:commandButton action="{!previous}" value="<< 前の200件" rendered="{!IF(resultCount > 200, (IF(dto.currentPage == 1, false, true)), false)}" />
+            <apex:commandButton value="編集の取消" action="{!doCancel}" immediate="true" status="cancelStatus" rerender="result" />
+            <apex:commandButton value="更新" action="{!doUpdate}" onclick="return confirm('チェックの付いたデータを更新します。よろしいですか？');" />
+            <apex:commandButton value="削除" action="{!doDelete}" onclick="return confirm('チェックの付いたデータを削除します。よろしいですか？');" />
+            <apex:commandButton value="出力" action="{!doExport}" onclick="checkExport(event);" />
+            <apex:commandButton action="{!next}" value="次の200件 >>" rendered="{!IF(resultCount > 200, (IF(dto.currentPage == (FLOOR(resultCount / 200) + 1), false, true)), false)}" />
+        </apex:pageBlockButtons>
+        <apex:outputText value="総数: {0} 件"><apex:param value="{!resultCount}" /></apex:outputText>
+        <br />
+        <apex:outputText value="{0} ページ" rendered="{!IF(resultCount > 200, true, false)}"><apex:param value="{!dto.currentPage}" /></apex:outputText>
+        <table id="objectBulkUpdatePage:resultForm:resultBlock:resultTable" class="list">
+            <thead>
+                <tr class="headerRow">
+                    <th class="headerRow" style="width: 30px;"><input type="checkbox" id="checkall" onchange="toggleAllCheckbox(event); return false"/></th>
+                    <th class="headerRow" style="width: 30px;"><apex:outputText value="詳細" /></th>
+                    <th class="headerRow" style="width: 30px;"><apex:outputText value="編集" /></th>
+                    <apex:repeat value="{!dto.fieldKeys}" var="field">
+                        <th class="headerRow">{!dto.fieldNames[field]}</th>
+                    </apex:repeat>
+                </tr>
+            </thead>
+            <tbody>
+                <apex:repeat value="{!resultList}" var="o" id="resultListId">
+                    <tr class="dataRow">
+                        <td class="dataCell"><apex:inputCheckBox id="dataCheckBox" value="{!o.checked}" /></td>
+                        <td class="dataCell"><apex:outputLink target="_blank" value="/{!o.result.id}"><apex:outputText value="詳細" /></apex:outputLink></td>
+                        <td class="dataCell"><apex:outputLink target="_blank" value="/{!o.result.id}/e?retURL=%2F{!o.result.id}"><apex:outputText value="編集" /></apex:outputLink></td>
+                        <apex:repeat value="{!dto.fieldKeys}" var="field">
+                            <td class="dataCell">
+                                <apex:inputField value="{!o.result[field]}" required="false" onchange="changeCheckBox(event,id);" style="display:block;" rendered="{!!dto.isPersonAccountFlg}"/>
+                                <apex:outputText rendered="{!dto.isPersonAccountFlg}">
+                                    <apex:outputField value="{!o.result[field]}" style="display:block;" rendered="{!IF(o.result['IsPersonAccount']&&field=='Name', true, false)}"/>
+                                    <apex:inputField value="{!o.result[field]}" required="false" onchange="changeCheckBox(event,id);" style="display:block;" rendered="{!IF(o.result['IsPersonAccount']&&field=='Name', false, true)}"/>
+                                </apex:outputText>
+                            </td>
+                        </apex:repeat>
+                    </tr>
+                </apex:repeat>
+            </tbody>
+        </table>
+    </apex:pageBlock>
+</apex:form>
+<script type="text/javascript">
+    $(function(){
+      $(".list").resizableColumns();
+    });
+</script>
+</apex:page>

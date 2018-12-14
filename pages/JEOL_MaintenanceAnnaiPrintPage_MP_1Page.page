@@ -1,0 +1,888 @@
+<apex:page renderAs="{!renderTarget}" showHeader="false" standardStylesheets="false" applyHtmlTag="false" applyBodyTag="false" doctype="html-5.0" controller="JEOL_MaintenanceSogoAnnaiPrintPageCtrl" >
+ 
+ <html>
+        <head>
+            <meta charset="utf-8" />
+            <style>
+                @media print,screen {
+                      html, body {
+                        margin: 0pt;
+                        padding: 0pt;
+                        font-size: 10.5pt;
+                        font-family: 'Arial Unicode MS';
+                        height: 100%;
+                      }
+                      * {
+                        color: #000;
+                        padding: 0pt;
+                        font-weight: 400;
+                      }
+                  }
+
+                  .contents {
+                    display: none;
+                    width: 100%;
+                    margin: 0 auto;
+                    /*position: relative;*/
+                    overflow: auto;
+                    padding: 0, 2px, 0, 0px;
+                  }
+
+                  .hidden {
+                    display: none;
+                  }
+                  
+                  .page{
+                    page-break-after: avoid;
+                    padding: 0, 1pt, 0, 1pt;
+                  }
+
+                  .extra-space-1{
+                    margin-top: 15px;
+                  }
+
+                  .extra-space-2{
+                    margin-top: 30px;
+                  }
+
+                  .extra-space-3{
+                    margin-top: 45px;
+                  }
+
+                  .extra-space-4{
+                    margin-top: 60px;
+                  }
+
+                  /*section is where we have content, these sections can be broken into pages further*/
+                  .page .page-section{
+                    display: inline-block;
+                    width: 100%;
+                    /*position: relative;*/
+                  }
+
+                  /*START: A grid system to place content on a line, column-wise of specified widths */
+                  /*rows can have columsn...uptill max width of 4units*/
+                  .page .page-section .row{
+                    width: 100%;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    display: inline-block;
+                    vertical-align: top;
+                  }
+
+                  /*column of width 1 unit*/
+                  .page .page-section .row .col-1{
+                    width: 20%; height: 14px;
+                    float: left;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    display: inline-block;
+                    vertical-align: top;
+                    padding-bottom: 4px;
+                  }
+
+                   /*column of width 1.5 units*/
+                  .page .page-section .row .col-1-5{
+                    width: 30%; height: 14px;
+                    float: left;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    display: inline-block;
+                    vertical-align: top;
+                    padding-bottom: 4px;
+                  }
+
+                  /*column of width 2 units*/
+                  .page .page-section .row .col-2{
+                    width: 45%; height: 14px;
+                    float: left;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    display: inline-block;
+                    vertical-align: top;
+                    padding-bottom: 4px;
+                  }
+
+                   /*column of width 2.5 units*/
+                  .page .page-section .row .col-2-5{
+                    width: 60%; height: 14px;
+                    float: left;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    display: inline-block;
+                    vertical-align: top;
+                    padding-bottom: 4px;
+                  }
+                   /*column of width 2.5 units*/
+                  .page .page-section .row .col-2-5-right{
+                    width: 60%; height: 14px;
+                    float: right;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    display: inline-block;
+                    vertical-align: top;
+                    margin-right: 70px;
+                    padding-bottom: 4px;
+                  }
+
+                  /*column of width 3 units*/
+                  .page .page-section .row .col-3{
+                    width: 70%; height: 14px;
+                    float: left;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    display: inline-block;
+                    vertical-align: top;
+                    padding-bottom: 4px;
+                  }
+                  /*column of width 3 units*/
+                  .page .page-section .row .col-3-right{
+                    width: 70%; height: 14px;
+                    float: right;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    display: inline-block;
+                    vertical-align: top;
+                    margin-right: 67px;
+                    padding-bottom: 4px;
+                  }
+
+                  /*column of width 4 units*/
+                  .page .page-section .row .col-4{
+                    width: 95%; height: 14px;
+                    float: left;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    display: inline-block;
+                    vertical-align: top;
+                    padding-bottom: 4px;
+                  }
+                  /*END: A grid system to place content on a line, column-wise of specified widths */
+
+                  .page .section-break{
+                    page-break-after: always;
+                  }
+
+                  .section-one-header{
+                    display: inline-block;
+                    overflow: auto;
+                    margin-left: 64px;
+                  }
+
+                  .section-one-header .address-pin-code{
+                    float:left;
+                    /*margin-left: 20px;*/
+                  }
+
+                  .section-one-header .print-date{
+                    float:right;
+                    margin-right: 30px;
+                  }
+
+                  .section-one-header .address-line{
+                    float:left;
+                    /*margin-left: 20px;*/
+                    width: 100%;
+                    display: block;
+                    overflow: auto;
+                  }
+
+                  .section-one-header .address-line-name{
+                    float:left;
+                    /*margin-left: 20px;*/
+                    margin-top: 5px;
+                    width: 100%;
+                    text-decoration: underline;
+                    display: block;
+                  }
+
+                  .section-one-header .jeol-stamp{
+                      float: right;
+                      width: 100%;
+                      text-align: right;
+                      font-weight: bold;
+                      font-size: 11.5;
+                      margin-right: 30px;
+                    }
+
+                   .section-one-content{
+                        float: left;
+                        display: block;
+                        overflow: auto;
+                        font-size: 10pt;
+                        width: 100%;
+                   }
+
+                   .section-one-content .content-title{
+                        display: inline-block;
+                        width: 100%;
+                        text-align: center;
+                        font-size: 16pt;
+                   }
+
+                    .section-one-content .content-description{
+                      font-size: 10pt;
+                      margin-top: 10px;
+                      margin-left: 40px;
+                      overflow: auto;
+                      display: inline-block;
+                      width: 100%;
+                    }
+
+                    .section-one-content .content-description .top-section-text{
+                        display: inline-block;
+                        overflow: auto;
+                        width: 90%; /*same as width of all page-long texts like top-section comment, bottom-comment*/
+                        font-size: 10pt;
+                    }
+
+                    .section-one-content .content-description-item-seperator{
+                        text-align: center;
+                        margin-top: 5px;
+                        margin-bottom: 5px;
+                        width: 100%;
+                        display: inline-block;
+                    }
+
+                    .section-one-content .content-items{
+                        font-size: 10pt;
+                        overflow: auto;
+                        display: inline-block;
+                        width: 100%;
+                    }
+
+                    .section-one-content .content-items .item-label{
+                    }
+
+                    .section-one-content .content-items .item-value{
+                        margin-left: 20px; 
+                        display: block;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        /*text-decoration: underline;*/
+                        /*text-decoration-style: dashed;*/ /*Not-supported by so many browsers that you wouldn't believe*/
+                    }
+
+                    .section-one-content .content-items .item-value-currency-indent{
+                        margin-left: 50px;
+                    }
+
+                    .section-one-content .content-footer{
+                        margin-top: -8px;
+                        margin-bottom: 5px;
+                        margin-left: 40px;
+                        width: 90%; /*same as width of all page-long texts like top-section comment, bottom-comment*/
+                    }
+
+                    .section-two-header .left-item-indent{
+                        margin-left: 40px;
+                    }
+
+                    .section-two-header .right-item-indent{
+                        margin-left: 80px;
+                    }
+
+                    .section-two-content{
+                      display:inline-block; overflow: auto;
+                      width: 100%;
+                      float: left;
+                    }
+
+                    .section-two-content .content-title{
+                        display: inline-block;
+                        width: 100%;
+                        text-align: center;
+                        font-size: 16pt;
+                    }
+
+                    .section-two-content .content-items{
+                        font-size: 10pt;
+                        overflow: auto;
+                        display: inline-block;
+                        width: 100%;
+                    }
+
+                    .section-two-content .content-items .item-label{
+                        margin-left: 40px;
+                    }
+
+                    .section-two-content .content-items .item-label-indent{
+                        margin-left: 40px;
+                    }
+
+                    .section-two-content .content-items .item-value{
+                        margin-left: 20px;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                      }
+
+                    
+                     /* START: Divides page into two columns: left-itemBox and right-itemBox. Handles overflows in either of the sections*/
+                    .page .page-section .left-itemBox{
+                      width:50%; float: left;
+                      display: block;overflow: auto;
+                    }
+
+                    .page .page-section .right-itemBox{
+                      width:50%; float: right;
+                      display: block;overflow: auto;
+                    }
+
+                    .page .page-section .left-itemBox .item-row{
+                    }
+
+                    .page .page-section .left-itemBox .item-row .item-row-label{
+                      margin-top: 5px;width: 30%; display: inline-block;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                    }
+
+                    .page .page-section .left-itemBox .item-row .item-row-value{
+                      margin-top: 5px;width: 60%; 
+                      display: inline-block;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                    }
+
+                    .page .page-section .left-itemBox .item-box{
+                      border-style: solid; width:80%;
+                      margin-top:5px; margin-left:35px; margin-bottom: 5px;
+                    }
+
+                    .page .page-section .left-itemBox .item-box .item-box-content-indent{
+                      margin-left:5px;margin-top: 5px; margin-bottom: 5px;
+                    }
+
+                    .page .page-section .right-itemBox .item-row{}
+
+                    .page .page-section .right-itemBox .item-row-label{
+                      margin: 0px 0px 0px 0px;
+                      width: 40%; display: inline-block;overflow: hidden;
+                      text-overflow: ellipsis;
+                    }
+
+                    .page .page-section .right-itemBox .item-row-value{
+                      margin: 0px 0px 0px 0px;
+                      width: 40%; height: 16px;
+                      display: inline-block;overflow: hidden;
+                      text-overflow: ellipsis;
+                      /*float: right; margin-right: 70px;*/
+                    }
+
+                    .page .page-section .right-itemBox .item-row-value-indent{
+                      margin-left: 20px;
+                    }
+
+                    .page .page-section .right-itemBox .checkBox-content{
+                      margin-top:10px;margin-left:40px;width:80%;}
+
+                     /* END: Divides page into two columns: left-itemBox and right-itemBox. Handles overflows in either of the sections*/ 
+
+                    .section-two-content .content-footer-others{
+                      margin-left: 40px; margin-top: 0px;
+                    }
+
+                    .section-two-content .content-footer-others .item-label{
+                        width:100%;display: inline-block;overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+
+                    .section-two-content .content-footer-others .item-value{
+                        width:100%;display: inline-block;overflow: hidden;
+                        text-overflow: ellipsis;text-align: center;
+                    }
+
+                    .section-two-content .content-footer-others .item-value .item-value-line{
+                      width: 90%;margin-left: 20px;}
+
+                    .section-two-content .content-footer-comment{
+                      margin-left: 40px; margin-top: 10px;
+                      width: 90%; /*same as width of all page-long texts like top-section comment, bottom-comment*/
+                      font-size: 10pt;
+                    }
+
+                    .extra-margin{
+                      margin-top: 0px; margin-bottom: 8px;
+                      line-height: 1.45em;
+                    }
+
+                    .extra-margin-top{
+                      margin-top: 0px; margin-bottom: 8px;
+                      line-height: 1.45em;
+                    }
+
+                    .no-margin{
+                      margin-top: 0px; margin-bottom: 0px;
+                    }
+
+                    .no-margin-top{
+                      margin-top: 0px; margin-bottom: 0px;
+                    }
+
+                    .page .make-inline-block{
+                        display: inline-block;
+                    }
+
+                    #tab, .tab { display:inline-block; margin-left: 20px; }
+                    .underline-solid{border-bottom:1px solid #000000; width:480px; padding-bottom:4px;}
+                    .underline-solid2{border-bottom:1px solid #000000; width:480px; padding-bottom:0px;}
+                    .underline-dashed{border-bottom:1px solid #000000; width:480px; padding-bottom:4px;}
+                    .centerline-dashed{border-top:2px solid #000000; width: 100%;}
+
+            </style>
+            <apex:outputPanel layout="none" rendered="{!outputType == 'print'}">
+                <style>
+                  @media print {
+                    .contents {
+                      display: block;
+                    }
+                  }
+                </style>
+            </apex:outputPanel>
+        </head>
+        <body>
+            <div class="contents">
+                <div class="page">
+                    <div class="page-section {!IF(rec.AnnaiType__c = '2Pages','extra-margin-top','no-margin-top')}">
+                        <div class="section-one-header">
+
+                            <apex:outputText value="〒 {!rec.RenewalAddressPostalCodePrint__c}" rendered="{!IF(ISNULL(rec.RenewalAddressPostalCodePrint__c),false,true)}" styleClass="address-pin-code"/> 
+
+                            <!--Shows western date if RenewalOptionDateFormat__c=2, shows Jp date otherwise-->
+                            <apex:outputText value="{!printDate}　　" styleClass="print-date"/> 
+
+                            <apex:outputText value="{!rec.RenewalAddressLine1Print__c}" rendered="{!IF(ISNULL(rec.RenewalAddressLine1Print__c),false,true)}" styleClass="address-line"/> 
+                            <apex:outputText value="{!rec.RenewalAddressLine2Print__c}" rendered="{!IF(ISNULL(rec.RenewalAddressLine2Print__c),false,true)}" styleClass="address-line"/>
+                            <apex:outputText value="{!rec.RenewalCompanyNamePrint__c}" rendered="{!IF(ISNULL(rec.RenewalCompanyNamePrint__c),false,true)}" styleClass="address-line"/>
+                            <apex:outputText value="{!rec.RenewalUndergraduatePrint__c}" rendered="{!IF(ISNULL(rec.RenewalUndergraduatePrint__c),false,true)}" styleClass="address-line"/>
+
+                            <apex:variable var="showAdresseeName" value="" rendered="{!IF(NOT(ISNULL(rec.RenewalContactPositionPrint__c))||NOT(ISNULL(rec.RenewalTantoshyaPrint__c)),true,false)}">
+                              <div class="address-line-name">
+                                <apex:outputText value="{!rec.RenewalContactPositionPrint__c} {!rec.RenewalTantoshyaPrint__c} "/>
+                                <apex:outputText value=" 様" styleClass="tab"/>
+                                <apex:outputText value=" " styleClass="tab"/>
+                              </div>
+                            </apex:variable>
+
+                            <apex:outputText value="{!$Label.JEOL_MaintenanceAnnaiPrintPage_Label_JEOLKK}　　" rendered="true" styleClass="jeol-stamp"/>
+
+                        </div>
+
+                        <!-- Extra space for 2-pages layout-->
+                        <div class="{!IF(rec.AnnaiType__c = '2Pages','extra-space-2','no-margin')}"></div>
+
+                        <div class="section-one-content">
+                            <div class="content-title">
+                                <apex:outputLabel value="年間保守契約 継続のご案内"/>
+                            </div>
+
+                            <!-- Extra space for 2-pages layout-->
+                            <div class="{!IF(rec.AnnaiType__c = '2Pages','extra-space-2','no-margin')}"></div>
+
+                            <div class="content-description">
+                              <div>
+                                <span>拝啓　時下ますますご清栄のこととお慶び申し上げます。</span>
+                              </div>
+                              <div>
+                                <span>平素は格別のお引き立てにあずかり、有り難く厚く御礼申し上げます。</span>
+                              </div>
+                              <div>
+                                <span>&nbsp;&nbsp;&nbsp;&nbsp;さて、現在ご契約頂いております機器の保守契約期間は下記のようになっております。</span>
+                              </div>
+                              <div>
+                                <span>つきまして、年間保守契約期間満了後も、引き続き御契約下さいますようご案内申し上げます。</span>
+                              </div>
+                              <div class="top-section-text">
+                                <apex:outputField value="{!rec.RenewalTopSectionText__c}"/>
+                              </div>
+                            </div>
+
+                            <!-- Extra space for 2-pages layout-->
+                            <div class="{!IF(rec.AnnaiType__c = '2Pages','extra-space-3','no-margin')}"></div>  
+
+                            <apex:outputText value="記" styleClass="content-description-item-seperator" />
+
+                            <div class="{!IF(rec.AnnaiType__c = '2Pages','extra-space-3','no-margin')}"></div>  
+
+                            <div class="content-items">
+                                <ol>
+                                    <li>
+                                        <div class="row {!IF(rec.AnnaiType__c = '2Pages','extra-margin','no-margin')}">
+                                            <div class="col-1">
+                                                <span class="item-label-indent">納入場所</span>
+                                            </div>
+                                            <apex:repeat value="{!lsRenewalDeliveryLocation}" var="deliveryLocation">
+                                                <div class="col-3-right underline-dashed {!IF(rec.AnnaiType__c = '2Pages','extra-margin','no-margin')}">
+                                                    <apex:outputText value="{!deliveryLocation}" styleClass="item-value"/>
+                                                </div>
+                                            </apex:repeat>
+                                        </div>
+                                    </li>
+
+                                    <li>
+                                        <div class="row {!IF(rec.AnnaiType__c = '2Pages','extra-margin','no-margin')}">
+                                            <div class="col-1">
+                                                <span class="item-label-indent">保守契約機器</span>
+                                            </div>
+                                            <apex:repeat value="{!lsItemName}" var="item">
+                                                <div class="col-3-right underline-dashed {!IF(rec.AnnaiType__c = '2Pages','extra-margin','no-margin')}">
+                                                    <apex:outputText value="{!item}" styleClass="item-value"/>
+                                                </div>
+                                            </apex:repeat>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="row {!IF(rec.AnnaiType__c = '2Pages','extra-margin','no-margin')}">
+                                            <div class="col-1">
+                                                <span class="item-label-indent">現在のご契約期間</span>
+                                            </div>
+                                            <apex:repeat value="{!lsMaintenancePeriod}" var="line">
+                                                <div class="col-3-right underline-dashed {!IF(rec.AnnaiType__c = '2Pages','extra-margin','no-margin')}">
+                                                    <div class="item-value">
+                                                        <apex:outputText value="{!line}"/>
+                                                    </div>
+                                                </div>
+                                            </apex:repeat>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="row {!IF(rec.AnnaiType__c = '2Pages','extra-margin','no-margin')}">
+                                            <div class="col-1">
+                                                <span class="item-label-indent">現在のご契約金額</span>
+                                            </div>
+                                            <div class="col-3 underline-dashed">
+                                                <div class="item-value-currency-indent">
+                                                  <c:JEOL_CurrencyFormatComponent currencyData="{!rec.PreviousAmount__c}" addYenMark="true"/><span id="tab">（消費税は含んでおりません）</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="row {!IF(rec.AnnaiType__c = '2Pages','extra-margin','no-margin')}">
+                                            <div class="col-1">
+                                                <span class="item-label-indent">次回ご契約期間</span>
+                                            </div>
+                                            
+                                            <!--Shows western date if RenewalOptionDateFormat__c=2, shows Jp date otherwise-->
+                                            <apex:variable var="showJapaneseDate" value="" rendered="{!IF(rec.RenewalOptionDateFormat__c = '2',true,false)}">
+                                              <div class="col-3 underline-dashed">
+                                                 <div class="item-value">
+                                                    <apex:outputText value="{!startDate}"/>
+                                                    <span>&nbsp;~&nbsp;</span>
+                                                    <apex:outputText value="{!endDate}"/>
+                                                 </div>
+                                              </div>
+                                            </apex:variable>
+                                            <apex:variable var="showJapaneseDate" value="" rendered="{!IF(rec.RenewalOptionDateFormat__c != '2',true,false)}">
+                                              <div class="col-3 underline-dashed">
+                                                 <div class="item-value">
+                                                  <apex:outputText value="{!startDate}"/>
+                                                  <span>&nbsp;より&nbsp;</span>
+                                                  <apex:outputText value="{!endDate}"/>
+                                                  <span>&nbsp;まで</span>
+                                                </div>
+                                              </div>
+                                            </apex:variable>
+
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="row {!IF(rec.AnnaiType__c = '2Pages','extra-margin','no-margin')}">
+                                            <div class="col-1">
+                                                <span class="item-label-indent">次回お見積額</span>
+                                            </div>
+                                            <div class="col-3 underline-solid">
+                                                <div class="item-value-currency-indent">
+                                                  <c:JEOL_CurrencyFormatComponent currencyData="{!rec.Amount__c}" addYenMark="true"/><span id="tab">（消費税は含んでおりません）</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ol>
+                            </div>
+
+                            <!-- Extra space for 2-pages layout-->
+                            <div class="{!IF(rec.AnnaiType__c = '2Pages','extra-space-1','no-margin')}"></div>
+
+                            <div class="content-footer">
+                                <apex:outputText value="お問合せは、{!rec.JEOLRegionNamePrint__c} {!rec.JEOLContactPositionPrint__c} {!rec.JEOLPipelineResponsiblePrint__r.LastName} {!rec.RenewalContactTelPrint__c} までご連絡下さい。"/>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <apex:variable var="doSectionBreak" value="" rendered="{!IF(rec.AnnaiType__c != '2Pages',true,false)}">
+                      <div class="centerline-dashed"></div>
+                    </apex:variable>
+                    <apex:variable var="doSectionBreak" value="" rendered="{!IF(rec.AnnaiType__c == '2Pages',true,false)}">
+                        <div class="section-break"></div>
+                    </apex:variable>
+
+                    <div class="{!IF(rec.AnnaiType__c = '2pages','extra-space-1','no-margin')}"></div>
+
+                    <div class="page-section {!IF(rec.AnnaiType__c = '2Pages','extra-margin','no-margin')}">
+                        <div class="section-two-header">
+
+                          <div>
+                            <div class="left-itemBox">
+                              <div class="item-row left-item-indent {!IF(rec.AnnaiType__c = '2Pages','extra-margin','no-margin')}">
+                                <apex:outputText value="{!rec.JOELReplyRegionNamePrint__c}" styleClass="make-inline-block"/>
+                                <apex:outputText value="&nbsp;" escape="false" styleClass="make-inline-block" rendered="{!rec.JEOLReplyContactPositionPrint__c != null && rec.JOELReplyRegionNamePrint__c != null}"/>
+                                <apex:outputText value="{!rec.JEOLReplyContactPositionPrint__c}"  styleClass="make-inline-block" rendered="{!rec.JEOLReplyContactPositionPrint__c != null}"/>
+                                <apex:outputText value="&nbsp;" escape="false" styleClass="make-inline-block" rendered="{!rec.JeolPipelineResponsible2Print__r != null && (rec.JEOLReplyContactPositionPrint__c != null || rec.JOELReplyRegionNamePrint__c != null)}"/>
+                                <apex:outputText value="{!rec.JeolPipelineResponsible2Print__r.LastName}" styleClass="make-inline-block" rendered="{!rec.JeolPipelineResponsible2Print__r != null}"/>
+                                <apex:outputText value="&nbsp;行" escape="false" styleClass="make-inline-block" rendered="{!rec.JeolPipelineResponsible2Print__r != null || rec.JEOLReplyContactPositionPrint__c != null || rec.JOELReplyRegionNamePrint__c != null}"/>
+                              </div>
+                              <div class="item-row left-item-indent {!IF(rec.AnnaiType__c = '2Pages','extra-margin','no-margin')}">
+                                <apex:outputText value="{!rec.RenewalContactFaxPrint__c}"/>
+                              </div>
+                            </div>
+
+                            <div class="right-itemBox">
+                                <div class="item-row {!IF(rec.AnnaiType__c = '2Pages','extra-margin','no-margin')}">
+                                    <apex:variable var="lsContractCounter" value="{!1}"/>
+                                    <apex:repeat value="{!lsContractNo}" var="line">
+                                        <div class="item-row-label">
+                                            <apex:outputText value="{!IF(lsContractCounter = 1,'契約番号',' ')}" styleClass="right-item-indent"/>
+                                            <!--<span class="right-item-indent">契約番号</span> -->
+                                        </div>
+                                        <div class="underline-dashed item-row-value">
+                                          <apex:outputText value="{!line}" styleClass="item-row-value-indent"/>
+                                        </div>
+                                    <apex:variable var="lsContractCounter" value="{!lsContractCounter + 1}"/>
+                                    </apex:repeat>
+                                </div>
+                                
+
+                              <div class="item-row {!IF(rec.AnnaiType__c = '2Pages','extra-margin','no-margin')}">
+                                <apex:variable var="lsUnitBodyCounter" value="{!1}"/>
+                                <apex:repeat value="{!lsUnitBody}" var="line">
+                                    <div class="item-row-label">
+                                        <apex:outputText value="{!IF(lsUnitBodyCounter = 1,'号機No.',' ')}" styleClass="right-item-indent"/>
+                                      <!--<span class="right-item-indent">号機No.</span>-->
+                                    </div>
+                                    <div class="underline-dashed item-row-value">
+                                      <apex:outputText value="{!line}" styleClass="item-row-value-indent"/>
+                                    </div>
+                                <apex:variable var="lsUnitBodyCounter" value="{!lsUnitBodyCounter + 1}"/>
+                                </apex:repeat>
+                              </div>
+                            </div>
+
+                          </div>
+                          
+                        </div>
+
+                        <div class="section-two-content">
+
+                            <div class="{!IF(rec.AnnaiType__c = '2Pages','extra-space-4','no-margin')}"></div>
+
+                            <div class="content-title">
+                                <!-- Extra space for 2-pages layout-->
+                                <span>年間保守契約継続依頼書</span>
+                            </div>
+
+                            <!-- Extra space for 2-pages layout-->
+                            <div class="{!IF(rec.AnnaiType__c = '2Pages','extra-space-4','no-margin')}"></div>
+
+                            <div class="content-items">
+                                <div class="row {!IF(rec.AnnaiType__c = '2Pages','extra-margin','no-margin')}">
+                                  <div class="col-1-5">
+                                    <span class="item-label-indent">納入場所</span>
+                                  </div>
+                                  <apex:repeat value="{!lsRenewalDeliveryLocation}" var="deliveryLocation">
+                                      <div class="col-2-5-right underline-dashed {!IF(rec.AnnaiType__c = '2Pages','extra-margin','no-margin')}">
+                                        <apex:outputText value="{!deliveryLocation}" styleClass="item-value"/>
+                                      </div>
+                                  </apex:repeat>
+                                </div>
+
+                                <div class="row {!IF(rec.AnnaiType__c = '2Pages','extra-margin','no-margin')}">
+                                  <div class="col-1-5">
+                                    <span class="item-label-indent">保守契約機器</span>
+                                  </div>
+                                  <apex:repeat value="{!lsItemName}" var="item">
+                                      <div class="col-2-5-right underline-dashed {!IF(rec.AnnaiType__c = '2Pages','extra-margin','no-margin')}">
+                                        <apex:outputText value="{!item}" styleClass="item-value"/>
+                                      </div>
+                                  </apex:repeat>
+                                </div>
+
+                                <div class="row {!IF(rec.AnnaiType__c = '2Pages','extra-margin','no-margin')}">
+                                  <div class="col-1-5">
+                                    <span class="item-label-indent">次年度のご契約期間</span>
+                                  </div>
+
+                                  <!--Shows western date if RenewalOptionDateFormat__c=2, shows Jp date otherwise-->
+                                  <apex:variable var="showJapaneseDate" value="" rendered="{!IF(rec.RenewalOptionDateFormat__c = '2',true,false)}">
+                                    <div class="col-2-5 underline-dashed">
+                                       <div class="item-value">
+                                          <apex:outputText value="{!startDate}"/>
+                                          <span>&nbsp;~&nbsp;</span>
+                                          <apex:outputText value="{!endDate}"/>
+                                       </div>
+                                    </div>
+                                  </apex:variable>
+                                  <apex:variable var="showJapaneseDate" value="" rendered="{!IF(rec.RenewalOptionDateFormat__c != '2',true,false)}">
+                                    <div class="col-2-5 underline-dashed">
+                                       <div class="item-value">
+                                        <apex:outputText value="{!startDate}"/>
+                                        <span>&nbsp;より&nbsp;</span>
+                                        <apex:outputText value="{!endDate}"/>
+                                        <span>&nbsp;まで</span>
+                                      </div>
+                                    </div>
+                                  </apex:variable>
+                            
+                                </div>
+
+                                <div class="row {!IF(rec.AnnaiType__c = '2Pages','extra-margin','no-margin')}">
+                                  <div class="col-1">
+                                    <span class="item-label-indent">ご住所</span>
+                                  </div>
+                                  <div class="col-3 underline-dashed">
+                                    <apex:outputText value="〒" styleClass=""/>
+                                  </div>
+                                </div>
+ 
+                                
+                                  <div class="row {!IF(rec.AnnaiType__c = '2Pages','extra-margin','no-margin')}">
+                                    <div class="col-1">
+                                      <apex:variable var="customerReplyLabelName" value="{!IF(rec.RenewalOptionCustomerNameLabel__c = '1','お客様名','契約者様名')}"/>
+                                      <apex:outputText value="{!customerReplyLabelName}" styleClass="item-label-indent"/>
+                                      <!--<span class="item-label-indent">お客様名</span> -->
+                                    </div>
+                                    <div class="col-3 underline-dashed">
+                                      <apex:outputText value="{!rec.RenewalCustomerNameReply__c}" styleClass="item-value"/>
+                                    </div>
+                                  </div>
+
+                                <div class="row {!IF(rec.AnnaiType__c = '2Pages','extra-margin','no-margin')}">
+                                  <div class="col-1-5">
+                                    <span class="item-label-indent">ご担当部署・ご担当者名</span>
+                                  </div>
+                                  <div class="col-2-5 underline-dashed">
+                                    <apex:outputText value="" styleClass="item-value"/>
+                                  </div>
+                                </div>
+
+                                <div class="row {!IF(rec.AnnaiType__c = '2Pages','extra-margin','no-margin')}">
+                                  <div class="col-2">
+                                    <div class="col-1-5">
+                                      <span class="item-label-indent">TEL</span>
+                                    </div>
+                                    <div class="col-2-5 underline-dashed" style="margin-left: 15px;width: 210px;">
+                                    </div>
+                                  </div>
+                                  <div class="col-2">
+                                    <div class="col-1-5" style="margin-left: 38px; vertical-align: top; width: 112px;">
+                                      <span class="item-label-indent">FAX</span>
+                                    </div>
+                                    <div class="col-2-5 underline-dashed" style="width:170px;">
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div class=""> <!--Partition STARTS HERE-->
+
+                                  <div class="left-itemBox">
+                                    <div class="item-row {!IF(rec.AnnaiType__c = '2Pages','extra-margin','no-margin')}">
+                                      <div class="item-row-label">
+                                        <span class="item-label-indent">上記金額</span>
+                                      </div>
+                                      <div class="underline-dashed item-row-value">
+                                        <span class="" style="margin-left: 150px;"> 円の通り</span>
+                                      </div>
+                                    </div>
+
+                                    <div class="{!IF(rec.AnnaiType__c = '2Pages','extra-space-2','no-margin')}"></div>
+
+                                    <apex:variable value="" var="showBoxedContent" rendered="{!IF(!rec.RenewalOptionHideChangeInfo__c, true, false)}">
+                                      <div class="item-box" style="width: 330px;margin-top: 15px; margin-bottom: 15px;">
+                                        <span class="item-box-content-indent">&nbsp;*&nbsp;&nbsp;装置納入先ご担当者様変更欄</span>
+                                        <span style="font-size: 6pt;vertical-align:text-top;">(変更があった際、ご記入願います)</span>
+                                        <br/>
+                                        <span class="item-box-content-indent">ご所属 :</span>
+                                        <br/>
+                                        <span class="item-box-content-indent">ご担当者様名 :</span>
+                                        <br/>
+                                      </div>
+                                    </apex:variable>
+
+                                    <div class="{!IF(rec.AnnaiType__c = '2Pages','extra-space-2','no-margin')}"></div>
+                                    <div class="{!IF(rec.AnnaiType__c != '2Pages' && rec.RenewalOptionHideChangeInfo__c,'extra-space-1','no-margin')}"></div>
+
+                                </div>
+
+                                <div class="right-itemBox"> 
+
+
+                                <apex:variable var="lsQuotationCounter" value="{!1}"/>
+                                <apex:repeat value="{!lsQuotation}" var="line">
+                                    <div class="item-row-label" style="width:31%;">
+                                        <apex:outputText value="{!IF(lsQuotationCounter = 1,'送付見積No.',' ')}" styleClass="right-item-indent"/>
+                                      <!--<span class="right-item-indent">号機No.</span>-->
+                                    </div>
+                                    <div class="underline-dashed item-row-value" style="width:169px;">
+                                      <apex:outputText value="{!line}" styleClass="item-row-value-indent"/>
+                                    </div>
+                                <apex:variable var="lsQuotationCounter" value="{!lsQuotationCounter + 1}"/>
+                                </apex:repeat>
+
+
+                                  <!-- Quotation number is not supported for multiple-pages
+                                  <apex:variable var="showRenewalQuotation" value="" rendered="{!IF(NOT(ISNULL(rec.RenewalQuotation__r.QuoteNo__c)) || NOT(ISNULL(rec.RenewalQuotation__r.BranchNo__c)),true,false)}">
+                                    <div class="item-row {!IF(rec.AnnaiType__c = '2Pages','extra-margin','no-margin')}" >
+                                      <div class="item-row-label" style="width:31%;">
+                                        <span class="item-label-indent">送付見積No.</span>
+                                      </div>
+                                      <div class="underline-dashed item-row-value" style="width:169px;">
+                                        <apex:outputText value="{!rec.RenewalQuotationNumber__c}" styleClass="item-row-value-indent"/>
+                                      </div>
+                                    </div>
+                                  </apex:variable>
+                                  -->
+
+                                    <div class="{!IF(rec.AnnaiType__c = '2Pages','extra-space-3','no-margin')}"></div>
+                                  
+                                    <apex:variable value="" var="showCheckBoxContent" rendered="{!IF(ISNULL(rec.RenewalListOptions__c),false,true)}">
+                                        <div class="checkBox-content">
+                                           <apex:outputField value="{!rec.RenewalListOptions__c}"/>
+                                        </div>
+                                    </apex:variable>
+                                </div>
+
+                                </div>  <!--Partition ENDS HERE-->
+
+                          </div> <!--content-items-->
+
+                          <!-- Extra space for 2-pages layout-->
+                          <div class="{!IF(rec.AnnaiType__c = '2Pages','extra-space-2','no-margin')}"></div>
+
+                          <div class="content-footer-others" style="">
+                            <div class="item-label">
+                              <span>その他の事項</span>
+                            </div>
+
+                            <div class="{!IF(rec.AnnaiType__c = '2pages','extra-space-1','no-margin')}"></div>
+
+                            <div class="item-value">
+                              <div class="underline-solid2 item-value-line" style=""></div>
+                            </div>
+                          </div>
+
+                          <!-- Extra space for 2-pages layout-->
+                          <div class="{!IF(rec.AnnaiType__c = '2Pages','extra-space-2','no-margin')}"></div>
+
+                          <div class="content-footer-comment {!IF(ISNULL(rec.RenewalFooterComment__c), 'hidden', '')}">
+                            <apex:outputField value="{!rec.RenewalFooterComment__c}" rendered="true" />
+                          </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </body>
+    </html>
+    
+</apex:page>

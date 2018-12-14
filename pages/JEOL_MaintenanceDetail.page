@@ -1,0 +1,632 @@
+<apex:page standardController="MaintenanceContractManagement__c" extensions="JEOL_MaintenanceDetailCtrl" >
+
+    <script>function setFocusOnLoad() {}</script>
+
+    <style>
+        .bgcolor-orange {
+            background-color: #F5B027 !important;
+        }
+    </style>
+
+    <apex:form >
+
+        <apex:pageMessages escape="false" />
+
+        <apex:pageBlock title="{!$Label.JEOL_MaintDetail_RenewalPipeline}" rendered="{!so != NULL}">
+
+            <apex:pageBlockButtons >
+                <apex:commandButton action="{!save}" tabindex="3000" value="{!$Label.JEOL_MaintDetail_Save}" />
+                <apex:commandButton action="{!cancel}" tabindex="3000" value="{!$Label.JEOL_MaintDetail_Cancel}" />
+            </apex:pageBlockButtons>
+
+            <!-- 基本情報 section -->
+            <apex:pageBlockSection title="基本情報" columns="2">
+                <apex:outputField value="{!so.Name}" />
+
+                <apex:inputField value="{!so.HidePipeline__c}" tabOrderHint="2" rendered="{!so.PreviousYearOrder__c == null}" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:pageBlockSectionItem rendered="{!so.PreviousYearOrder__c != null}" />
+
+                <!-- UNIT BODY - Case New -->
+                <apex:inputField value="{!so.UnitBody__c}" tabOrderHint="1" rendered="{!(so.PreviousYearOrder__c == null && (areAllFieldsEditable || isUnitBodyNull))}" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}">
+                    <apex:actionSupport event="onchange"
+                                        action="{!ImportDataFromUnitBody}"
+                                        rerender="sectionContractPlan, sectionSalesOrder, sectionSalesOrder3"/>
+                </apex:inputField>
+                <apex:outputField value="{!so.UnitBody__c}" rendered="{!(so.PreviousYearOrder__c == null && !(areAllFieldsEditable || isUnitBodyNull))}" />
+
+                <!-- UNIT BODY - Case Renewal -->
+                <apex:inputField value="{!so.UnitBody__c}" tabOrderHint="1" rendered="{!((so.PreviousYearOrder__c != null && so.PreviousYearOrder__r.UnitBodyLink__c == null) && (areAllFieldsEditable || isUnitBodyNull))}" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}" />
+                <apex:outputField value="{!so.UnitBody__c}" rendered="{!((so.PreviousYearOrder__c != null && so.PreviousYearOrder__r.UnitBodyLink__c == null) && !(areAllFieldsEditable || isUnitBodyNull))}" />
+
+
+                <apex:inputField value="{!so.ContractImpossible__c}" tabOrderHint="2" rendered="{!so.PreviousYearOrder__c == null}" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}" />
+
+
+                <!-- 見積書 -->
+                <apex:inputField value="{!so.NewOdrQuotation__c}" tabOrderHint="1" rendered="{!(so.PreviousYearOrder__c == null)}" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}">
+                    <apex:actionSupport event="onchange"
+                                        disabled="{!so.PreviousYearOrder__c != null}"
+                                        action="{!ImportDataFromQuotation}"
+                                        rerender="sectionContractPlan, sectionSalesOrder, sectionSalesOrder3"/>
+                </apex:inputField>
+
+                <apex:inputField value="{!so.ContractImpossibleReason__c}" tabOrderHint="2" rendered="{!so.PreviousYearOrder__c == null}" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}" />
+
+            </apex:pageBlockSection>
+
+
+
+
+
+            <!-- 情報（前年度の販売オーダ情報） section -->
+            <!--
+            <apex:pageBlockSection title="情報（前年度の販売オーダ情報）" rendered="{!so.PreviousYearOrder__c == null}">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="" />
+                    <apex:outputText value="去年のオーダがありません。" />
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            -->
+            
+            <apex:pageBlockSection title="情報（前年度の販売オーダ情報）" rendered="{!so.PreviousYearOrder__c != null}">
+               
+                <apex:outputField value="{!so.PreviousYearOrder__c}"/>
+
+                <!-- 出荷先取引先 -->
+                <apex:outputField value="{!so.PreviousYearOrder__r.ShipmentAccount__c}" rendered="{!so.PreviousYearOrder__r != null}"/>
+
+                <apex:pageBlockSectionItem />
+
+                <!-- 取引先コード -->
+                <apex:pageBlockSectionItem rendered="{!so.PreviousYearOrder__r != null}">
+                    <apex:outputLabel value="取引先コード" />
+                    <apex:outputField value="{!so.PreviousYearOrder__r.ShipmentAccountCode__c}" />
+                </apex:pageBlockSectionItem>
+
+                <!-- 本体号機 -->
+                <apex:outputField value="{!so.PreviousYearOrder__r.UnitBodyLink__c}" />
+
+                <!-- 機種 -->
+                <apex:outputField value="{!so.PreviousYearOrder__r.UnitBodyLink__r.Model__c}" />
+
+                <!-- オーダ日付 -->
+                <apex:outputField value="{!so.PreviousYearOrder__r.OrderDateFormula__c}" rendered="{!so.PreviousYearOrder__r != null}"/>
+
+                <apex:pageBlockSectionItem rendered="{!so.PreviousYearOrder__r != null}"/>
+
+                <!-- 見積番号 -->
+                <apex:pageBlockSectionItem rendered="{!so.PreviousYearOrder__r != null}">
+                    <apex:outputLabel value="見積No." />
+                    <apex:outputLink value="{!$Page.JEOL_QuotationEditorPage + '?id=' + so.PreviousYearOrder__r.QuotationInformation__c}" rendered="{!so.PreviousYearOrder__r.QuotationInformation__c != null}">
+                        <apex:outputText value="{!IF(ISBLANK(so.PreviousYearOrder__r.QuotationInformation__r.QuoteNo__c), '_', so.PreviousYearOrder__r.QuotationInformation__r.QuoteNo__c)}" />
+                        <apex:outputText value=" / " />
+                        <apex:outputText value="{!IF(ISBLANK(so.PreviousYearOrder__r.QuotationInformation__r.BranchNo__c), '_', so.PreviousYearOrder__r.QuotationInformation__r.BranchNo__c)}" />
+                    </apex:outputLink>
+                </apex:pageBlockSectionItem>
+
+                <!-- 契約金額 -->
+                <apex:outputField value="{!so.PreviousYearOrder__r.ConsumptionTax__c}" rendered="{!so.PreviousYearOrder__r != null}"/>
+
+                <!-- 製番 -->
+                <apex:outputField value="{!so.PreviousYearOrder__r.ProductNumber__c}" rendered="{!so.PreviousYearOrder__r != null}"/>
+
+                <!-- NET保守区分 -->
+                <apex:outputField value="{!so.PreviousYearOrder__r.NetMaintenance__c}" rendered="{!so.PreviousYearOrder__r != null}"/>
+
+                <!-- 保守契約期間 -->
+                <apex:outputField value="{!so.PreviousYearOrder__r.MaintenancePeriodText__c}" rendered="{!so.PreviousYearOrder__r != null}"/>
+
+                <!-- 保守種類 -->
+                <apex:outputField value="{!so.PreviousYearOrder__r.MaintenanceType__c}" rendered="{!so.PreviousYearOrder__r != null}"/>
+
+            </apex:pageBlockSection>
+
+
+
+
+
+            <!-- 前年度保守契約管理 section -->
+            <!--
+            <apex:pageBlockSection title="{!$Label.JEOL_MaintDetail_PrevYearPLInfo}" columns="1" rendered="{!so.PreviousYearPipeline__c == null}">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="" />
+                    <apex:outputText value="去年の保守契約管理がありません。" />
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            -->
+            
+            <apex:pageBlockSection title="{!$Label.JEOL_MaintDetail_PrevYearPLInfo}" columns="1" rendered="{!so.PreviousYearPipeline__c != null}">
+
+                <apex:outputField value="{!so.PreviousYearPipeline__c}" />
+                <apex:outputField value="{!so.PreviousYearPipeline__r.NextYearNotes__c}" />
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="前年度備考" />
+                    <apex:outputField value="{!so.PreviousYearPipeline__r.Memo__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="前年度ステータス" />
+                    <apex:outputField value="{!so.PreviousYearPipeline__r.Status__c}" />
+                </apex:pageBlockSectionItem>
+    
+            </apex:pageBlockSection>
+
+
+            <!-- 契約予定情報 section -->
+            <apex:pageBlockSection id="sectionRenewalInfo" title="{!$Label.JEOL_MaintDetail_RenewalInfo}" rendered="{!so.PreviousYearOrder__c != null}" columns="2">
+
+                <!-- 更新案内担当者 -->
+                <apex:inputField value="{!so.JeolPipelineResponsible__c}" tabOrderHint="10" style="width: 250px;" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.JeolPipelineResponsible2__c}" tabOrderHint="11" style="width: 250px;" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.JEOLRegionName__c}" tabOrderHint="10" style="width: 250px;" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.JEOLReplyRegionName__c}" tabOrderHint="11" style="width: 250px;" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.JEOLContactPosition__c}" tabOrderHint="10" style="width: 250px;" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.JEOLReplyContactPosition__c}" tabOrderHint="11" style="width: 250px;" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.JEOLContactTel__c}" tabOrderHint="10" style="width: 250px;" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.JEOLReplyContactFax__c}" tabOrderHint="11" style="width: 250px;" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem />
+               
+                <apex:inputField value="{!so.NewContractStartDate__c}" tabOrderHint="20" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.NewContractEndDate__c}" tabOrderHint="20" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.NewContractAmount__c}" tabOrderHint="20" style="width: 250px;" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.RenewalQuotation__c}" tabOrderHint="20" style="width: 250px;" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem />
+
+
+
+
+                <apex:inputField value="{!so.RenewalCompanyName__c}" tabOrderHint="100" style="width: 250px;" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.RenewalPostalCode__c}" tabOrderHint="101" style="width: 250px;" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.RenewalUndergraduate__c}" tabOrderHint="100" style="width: 250px;" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.RenewalAddress__c}" tabOrderHint="101" style="width: 250px;" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.RenewalContactPosition__c}" tabOrderHint="100" style="width: 250px;" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.RenewalAddress2__c}" tabOrderHint="101" style="width: 250px;" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.RenewalTantoshya__c}" tabOrderHint="100" style="width: 250px;" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:pageBlockSectionItem />
+
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem />
+
+                <apex:inputField value="{!so.RenewalDeliveryLocation__c}" tabOrderHint="100" style="width: 250px;" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.RenewalItemsName__c}" tabOrderHint="199" style="width: 250px;" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem />
+
+                <apex:inputField value="{!so.RenewalOptionCustomerNameLabel__c}" tabOrderHint="199" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.RenewalCustomerNameReply__c}" tabOrderHint="199" style="width: 250px;" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.RenewalTopSectionText__c}" tabOrderHint="199" style="width: 250px;" />
+                <apex:inputField value="{!so.RenewalFooterComment__c}" tabOrderHint="199" style="width: 250px;" />
+                <apex:inputField value="{!so.RenewalOptionDateFormat__c}" tabOrderHint="199" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.RenewalOptionHideChangeInfo__c}" tabOrderHint="199" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+
+                <apex:pageBlockSectionItem id="optionSection">
+
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.RenewalListOptions__c.Label}" />
+
+                    <apex:pageBlockTable value="{!lsOptions}" html-tabIndex="1990" var="optionRow" >
+                   
+                        <apex:column width="30px">
+                            <apex:inputField value="{!optionRow.TechnicalAlwaysFalse__c}"/>
+                        </apex:column>
+                        <apex:column headerValue="{!$ObjectType.MaintenanceContractManagement__c.fields.RenewalListOptions__c.Label}">
+                            <apex:outputField value="{!optionRow.Label__c}" />
+                        </apex:column>
+
+                        <apex:column width="30px">
+                             <apex:commandButton value="▲" action="{!optionMoveUp}" rerender="sectionRenewalInfo" style="padding-right: 5px; padding-left: 1px;" rendered="{!optionRow.SortNo__c > 0}">
+                                 <apex:param name="indiceOption" assignto="{!indiceOption}" value="{!optionRow.SortNo__c}"/>
+                             </apex:commandButton>
+                        </apex:column>
+
+                        <apex:column width="30px">
+                             <apex:commandButton value="▼" action="{!optionMoveDown}" rerender="sectionRenewalInfo" style="padding-right: 5px; padding-left: 1px;" rendered="{!optionRow.SortNo__c < nbOption - 1}">
+                                 <apex:param name="indiceOption" assignto="{!indiceOption}" value="{!optionRow.SortNo__c}"/>
+                             </apex:commandButton>
+                        </apex:column>
+                                    
+                    </apex:pageBlockTable>
+
+                </apex:pageBlockSectionItem>
+
+                <apex:inputField value="{!so.RenewalPrintDate__c}" tabOrderHint="199" />
+
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem />
+
+                <apex:inputField value="{!so.AnnaiType__c}" tabOrderHint="199" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}">
+                    <apex:actionSupport event="onchange"
+                                        rerender="sectionRenewalInfo"/>
+                </apex:inputField>
+
+            </apex:pageBlockSection>
+
+
+
+
+
+            <!-- 状況チェック欄 section -->
+            <apex:pageBlockSection title="{!$Label.JEOL_MaintDetail_Pipeline}" columns="2">
+                <apex:inputField value="{!so.QuotationCreated__c}" tabOrderHint="199" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.QuotationSentDate__c}" tabOrderHint="199" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.RenewalNoticeCreated__c}" tabOrderHint="199" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.RenewalNoticeSentDate__c}" tabOrderHint="199" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.ContractSentDate__c}" tabOrderHint="199" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:pageBlockSectionItem />
+                <apex:inputField value="{!so.RenewalApproved__c}" tabOrderHint="199" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.SubmittedToAccounting__c}" tabOrderHint="199" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.PipelineStopped__c}" tabOrderHint="199" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.PipelineStoppedReason__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock bgcolor-orange" />
+                        <apex:inputField value="{!so.PipelineStoppedReason__c}" tabOrderHint="199" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+
+                <apex:pageBlockSectionItem />
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.PipelineStoppedDate__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock bgcolor-orange" />
+                        <apex:inputField value="{!so.PipelineStoppedDate__c}" tabOrderHint="199" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+
+                <apex:inputField value="{!so.Status__c}" tabOrderHint="199"/>
+                <apex:inputField value="{!so.NewOdrNewUpdated__c}" tabOrderHint="199" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection columns="1">
+                <apex:inputField value="{!so.NextYearNotes__c}" tabOrderHint="199" style="width: 600px;" />
+                <apex:inputField value="{!so.Memo__c}" tabOrderHint="199" style="width: 600px;" />
+            </apex:pageBlockSection>
+
+
+
+
+
+
+
+            <!-- 契約情報 section -->
+            <apex:pageBlockSection id="sectionContractPlan" title="契約情報" columns="2">
+
+                <apex:inputField value="{!so.NewOdrMaintenanceStartDate__c}" tabOrderHint="199" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.NewOdrMaintenanceEndDate__c}" tabOrderHint="199" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrContractAmountt__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock bgcolor-orange" />
+                        <apex:inputField value="{!so.NewOdrContractAmountt__c}" tabOrderHint="199" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrSalesPipeline__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock bgcolor-orange" />
+                        <apex:inputField value="{!so.NewOdrSalesPipeline__c}" tabOrderHint="199" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem />
+
+                <!-- 販売先 / 出荷先 -->              
+                <apex:pageBlockSectionItem rendered="{!areAllFieldsEditable}">
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrSalesAccount__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock" rendered="{!so.PreviousYearOrder__c == null}"/>
+
+                        <apex:inputField value="{!so.NewOdrSalesAccount__c}" tabOrderHint="200" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}">
+                            <apex:actionSupport event="onchange"
+                                                action="{!ImportDataFromSalesAccount}"
+                                                rerender="sectionContractPlan"/>
+                        </apex:inputField>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+                <apex:outputField value="{!so.NewOdrSalesAccount__c}" rendered="{!!areAllFieldsEditable}" />
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrShipmentAccount__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock {!IF(so.PreviousYearOrder__c == null, '', 'bgcolor-orange')}"/>
+                        <apex:inputField value="{!so.NewOdrShipmentAccount__c}" tabOrderHint="201" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}">
+                            <apex:actionSupport event="onchange"
+                                                action="{!ImportDataFromShipmentAccount}"
+                                                rerender="sectionContractPlan"/>
+                        </apex:inputField>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrSalesContactPosition__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock bgcolor-orange" />
+                        <apex:inputField value="{!so.NewOdrSalesContactPosition__c}" tabOrderHint="200" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrShipmentContactPosition__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock bgcolor-orange" />
+                        <apex:inputField value="{!so.NewOdrShipmentContactPosition__c}" tabOrderHint="201" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrSalesContactPost__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock bgcolor-orange" />
+                        <apex:inputField value="{!so.NewOdrSalesContactPost__c}" tabOrderHint="200" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrShipmentContactPost__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock bgcolor-orange" />
+                        <apex:inputField value="{!so.NewOdrShipmentContactPost__c}" tabOrderHint="201" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrSalesTantoshya__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock bgcolor-orange" />
+                        <apex:inputField value="{!so.NewOdrSalesTantoshya__c}" tabOrderHint="200" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrShipmentTantosha__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock bgcolor-orange" />
+                        <apex:inputField value="{!so.NewOdrShipmentTantosha__c}" tabOrderHint="201" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrSalesContactTel__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock bgcolor-orange" />
+                        <apex:inputField value="{!so.NewOdrSalesContactTel__c}" tabOrderHint="200" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrShipmentContact_Tel__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock bgcolor-orange" />
+                        <apex:inputField value="{!so.NewOdrShipmentContact_Tel__c}" tabOrderHint="201" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrSalesContactFax__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock bgcolor-orange" />
+                        <apex:inputField value="{!so.NewOdrSalesContactFax__c}" tabOrderHint="200" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrShipmentContact_Fax__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock bgcolor-orange" />
+                        <apex:inputField value="{!so.NewOdrShipmentContact_Fax__c}" tabOrderHint="201" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+                
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem />
+
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrSalesStaff__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock {!IF(so.PreviousYearOrder__c == null, '', 'bgcolor-orange')}"/>
+                        <apex:inputField value="{!so.NewOdrSalesStaff__c}" tabOrderHint="299" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrAssistant__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock bgcolor-orange" />
+                        <apex:inputField value="{!so.NewOdrAssistant__c}" tabOrderHint="299" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+
+            </apex:pageBlockSection>
+
+
+
+
+
+
+            <!-- 販売オーダ情報 section -->
+            <apex:pageBlockSection id="sectionSalesOrder" title="販売オーダ情報" columns="2">
+
+                <apex:outputField value="{!so.NewOdrSalesOrder__c}" />
+                <apex:outputField value="{!so.NewOdrOrderDate__c}" />
+
+                <apex:inputField value="{!so.ProductNumber__c}" tabOrderHint="299" rendered="{!areAllFieldsEditable}" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:outputField value="{!so.ProductNumber__c}" rendered="{!!areAllFieldsEditable}" />
+
+                <!-- 年度 -->
+                <apex:inputField value="{!so.NewOdrFiscalYear__c}" tabOrderHint="299" rendered="{!areAllFieldsEditable}" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:outputField value="{!so.NewOdrFiscalYear__c}" rendered="{!!areAllFieldsEditable}" />
+
+                <!-- NET保守区分 -->
+                <apex:inputField value="{!so.NewOdrNetMaintenance__c}" tabOrderHint="299" rendered="{!areAllFieldsEditable}" required="true" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:outputField value="{!so.NewOdrNetMaintenance__c}" rendered="{!!areAllFieldsEditable}" />
+
+                <!-- 見積書 -->
+                <apex:inputField value="{!so.NewOdrQuotation__c}" tabOrderHint="299" rendered="{!(so.PreviousYearOrder__c != null)}" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}">
+                    <apex:actionSupport event="onchange"
+                                        disabled="{!so.PreviousYearOrder__c != null}"
+                                        action="{!ImportDataFromQuotation}"
+                                        rerender="sectionContractPlan, sectionSalesOrder, sectionSalesOrder3"/>
+                </apex:inputField>
+                <apex:pageBlockSectionItem rendered="{!so.PreviousYearOrder__c == null}" />
+
+                <!-- 系列 -->
+                <apex:pageBlockSectionItem rendered="{!areAllFieldsEditable}">
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrSeries__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock"/>
+                        <apex:inputField value="{!so.NewOdrSeries__c}" tabOrderHint="299" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+                <apex:outputField value="{!so.NewOdrSeries__c}" rendered="{!!areAllFieldsEditable}" />
+                
+                <!-- 地域 -->
+                <apex:pageBlockSectionItem rendered="{!areAllFieldsEditable}">
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrRegion__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock"/>
+                        <apex:selectList size="1" value="{!so.NewOdrRegion__c}" tabIndex="2990" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}">
+                          <apex:selectOptions value="{!RegionOptions}"/>
+                        </apex:selectList> 
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+                <apex:pageBlockSectionItem rendered="{!!areAllFieldsEditable}" >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrRegion__c.label}" />
+                    <apex:outputText value="{!CurrentNewOdrArea}" />
+                </apex:pageBlockSectionItem> 
+                
+                <!-- 部署 -->
+                <apex:pageBlockSectionItem rendered="{!areAllFieldsEditable}">
+                    <apex:outputLabel value="販売オフィス" />
+                    <apex:selectList size="1" value="{!DepartmentCode}" tabIndex="2990" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}">
+                      <apex:selectOptions value="{!departments}"/>
+                    </apex:selectList> 
+                </apex:pageBlockSectionItem> 
+                <apex:outputField value="{!so.NewOdrDepartment__c}" rendered="{!!areAllFieldsEditable}" />
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrContractDivision__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock bgcolor-orange" />
+                        <apex:inputField value="{!so.NewOdrContractDivision__c}" tabOrderHint="299" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrFlagshipProduct__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock bgcolor-orange" />
+                        <apex:inputField value="{!so.NewOdrFlagshipProduct__c}" tabOrderHint="299" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+
+                <apex:pageBlockSectionItem />
+                
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection columns="1">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrOrdersMemp__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock bgcolor-orange" />
+                        <apex:inputField value="{!so.NewOdrOrdersMemp__c}" tabOrderHint="299" style="width: 600px;" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection id="sectionSalesOrder3" >
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrReferenceOrder__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock bgcolor-orange" />
+                        <apex:inputField value="{!so.NewOdrReferenceOrder__c}" tabOrderHint="299" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrTradingCompanyInvolved__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock bgcolor-orange" />
+                        <apex:inputField value="{!so.NewOdrTradingCompanyInvolved__c}" tabOrderHint="299" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrShareOrderAmount__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock bgcolor-orange" />
+                        <apex:inputField value="{!so.NewOdrShareOrderAmount__c}" tabOrderHint="299" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrCommissionOrderAmount__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock bgcolor-orange" />
+                        <apex:inputField value="{!so.NewOdrCommissionOrderAmount__c}" tabOrderHint="299" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrCommissionPayment__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock bgcolor-orange" />
+                        <apex:inputField value="{!so.NewOdrCommissionPayment__c}" tabOrderHint="299" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem> 
+
+                <apex:inputField value="{!so.NewOdrMaintenanceType__c}" tabOrderHint="299" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+
+                <apex:pageBlockSectionItem />
+
+                <apex:inputField value="{!so.NewOdrRoutineCheck__c}" tabOrderHint="299" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                <apex:inputField value="{!so.NewOdrTroubleshooting__c}" tabOrderHint="299" style="width: 250px;" />
+                <apex:inputField value="{!so.NewOdrNotices1__c}" tabOrderHint="299" style="width: 250px;" />
+                <apex:inputField value="{!so.NewOdrNotices2__c}" tabOrderHint="299" style="width: 250px;" />
+                <apex:inputField value="{!so.NewOdrRepairParts__c}" tabOrderHint="299" style="width: 250px;" />
+                <apex:inputField value="{!so.NewOdrAtt__c}" tabOrderHint="299" style="width: 250px;" />
+                <apex:inputField value="{!so.NewOdrOther1__c}" tabOrderHint="299" style="width: 250px;"/>
+                <apex:inputField value="{!so.NewOdrOther2__c}" tabOrderHint="299" style="width: 250px;"/>
+                <apex:inputField value="{!so.NewOdrSalesNoOfTimes__c}" tabOrderHint="299" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+            </apex:pageBlockSection>
+
+            
+            
+            
+
+            <!-- 納入アンケート結果 section -->
+            <!--
+            <apex:pageBlockSection title="納入アンケート結果" rendered="{!so.PreviousYearOrder__c == null}">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="返却" />
+                    <apex:inputField value="{!so.InquiryRepayment__c}" tabOrderHint="299" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="保守可能性" />
+                    <apex:inputField value="{!so.InquiryMaintenancePossibity__c}" tabOrderHint="299" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="価格表" />
+                    <apex:inputField value="{!so.InquiryPriceList__c}" tabOrderHint="299" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="見積書" />
+                    <apex:inputField value="{!so.InquiryQuotation__c}" tabOrderHint="299" onkeydown="if(event.keyCode==13){this.blur();actionFunction();}"/>             
+                </apex:pageBlockSectionItem>    
+            </apex:pageBlockSection>
+            -->           
+                        
+            
+        </apex:pageBlock>
+
+    </apex:form>
+
+</apex:page>

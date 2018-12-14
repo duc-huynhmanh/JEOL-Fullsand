@@ -1,0 +1,7 @@
+<apex:page standardController="Account">
+  <apex:map width="600px" height="480px" mapType="roadmap" zoomLevel="17" center="{'latitude':{!Account.ShippingLatitude},'longitude':{!Account.ShippingLongitude}}" >
+    <apex:repeat value="{!Account.Contacts}" var="c">
+      <apex:mapMarker position="{'latitude':{!c.MailingLatitude},'longitude':{!c.MailingLongitude}}" title="{!c.Name}" />
+    </apex:repeat>
+  </apex:map>
+</apex:page>

@@ -1,0 +1,719 @@
+<apex:page controller="JEOL_MaintenanceListToRenew_ctrl" docType="html-5.0" >
+  <apex:stylesheet value="{!URLFOR($Resource.SearchBaseCss)}" />
+  <apex:stylesheet value="{!URLFOR($Resource.JQueryUI, 'JQueryUI/jquery-ui.min.css')}" />
+  <apex:includeScript value="{!URLFOR($Resource.JQuery)}" />
+  <apex:includeScript value="{!URLFOR($Resource.JQueryUI, 'JQueryUI/jquery-ui.min.js')}" />
+ 
+  <style>
+
+.customButton {  
+  background: none;
+  background-color: #ffffff;
+  display: block;
+  margin: 0 auto;
+  margin-top: 10px;
+  margin-bottom: -17px;
+  padding: 4px 16px;
+  border: 1px solid #7e9bc1;
+  color: #2f4159;
+  cursor: pointer;
+  border-radius: 4px;
+  text-decoration: none;
+  text-align: center;
+  box-shadow: none;
+  transition: box-shadow 0.1s linear 0s, background-color 0.1s linear 0s, border-color 0.1s linear 0s;
+  height: 30px;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  font-weight: normal;
+  float: left;
+  line-height: 30px;
+}
+.customButton:hover {
+  background: none;
+  background-color: #f2f5f8;
+  border-color: #00ABFF;
+  text-decoration: none;
+  box-shadow: 0px 1px 5px rgba(0,171,255,0.25);
+  position: relative;
+}
+.customButton:focus {
+  background: none;
+  box-shadow: 0px 1px 5px rgba(0,171,255,0.25);
+  border-color: #00ABFF;
+  background-color: #f2f5f8;
+  position: relative;
+}
+.customButton:active {  
+  transition: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.20) inset;
+  background-color: #e5ebf2;
+}
+
+    .input{
+        font-size:14px;
+        font-family:;
+        border: 1px solid #989c9d;
+        border-radius:5px;
+        padding: 3px 5px;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+        width: 120px;
+    }
+
+    .jeol_wait_panel {
+        left: auto !important;
+    }
+    .record-list {
+        margin-left: 0px;
+    }
+    #searchPanel {
+      margin-left: 0px;
+    }
+    .screenname {
+      margin-left: 0px;
+      height: 40px;
+    }
+    .fakeContainer {
+        width:1013px;
+    }
+    .label {
+    }
+    
+    .clm00 { width: 36px;}
+    .clm01 { width: 30px;}
+    .clm02 { width: 95px;}
+    .clm03 { width: 90px;}
+    .clm04 { width: 110px;} 
+    .clm05 { width: 80px;}
+    .clm06 { width: 80px;} 
+    .clm07 { width: 80px;} 
+    .clm08 { width: 115px;}
+    .clm09 { width: 1px;}
+    .clm10 { width: 1px;}
+
+    .searchresulttable {
+      width: 100%;
+      border: 0;
+      margin: 0;
+      padding: 0;
+    }    
+
+    .searchresulttable td{
+      border: 0;
+      margin: 0;
+      padding: 0 !important;
+    }    
+    
+    .seriesSelect, .regionsSelect {
+        display: none;
+    }
+   
+    .seriesItem, .regionsItem {
+        display: inline-block;
+        width: 120px;
+        float: left;
+        text-align: left;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        margin: 4px;
+        height: 1.3em;
+    }
+    .seriesSelect-header, .regionsSelect-header {
+        background-color: #9ccada;
+        margin: 8px 0 0 0;
+        padding: 8px;
+        font-size: 18px;
+        font-weight: bold;
+        border-radius: 4px;
+    }
+    .selectButtons {
+        text-align: right;
+    }
+    .selectButtons .button {
+        float: right;
+    }
+  </style>
+  <script type="text/javascript">
+    var $j = jQuery.noConflict();
+    var viewFunction;
+
+    function mode() {
+        if ((typeof viewFunction).toLowerCase() === 'function') {
+            viewFunction();
+        }
+    }
+
+    function callChangeOrder(key) {
+        var obj = $j('.orderInput');
+        obj.val(key);
+        changeOrder();
+    }
+
+    function hideSearchCriteriaPanel() {
+        $j("#open_icon").show();
+        $j("#close_icon").hide();
+        $j("#search_criteria").slideUp(500);
+        $j(".fakeContainer").animate({height: $j("#search_criteria").height() + 250 + 'px'},500);
+        viewFunction = hideSearchCriteriaPanel;
+    }
+
+    function showSearchCriteriaPanel() {
+        $j("#open_icon").hide();
+        $j("#close_icon").show();
+        $j("#search_criteria").slideDown(500);
+        $j(".fakeContainer").animate({height: '250px'},500);
+        viewFunction = showSearchCriteriaPanel;
+    }
+
+    function allViewMode() {
+        $j("#open_icon").show();
+        $j("#close_icon").hide();
+        $j("#search_criteria").slideUp(500);
+        $j(".fakeContainer").animate({height: $j('#viewTable').height() + 'px'},500);
+        viewFunction = allViewMode;
+    }
+
+    function showSeriesSelect() {
+        var target = $j('.seriesSelect');
+        if (target) {
+            target.dialog({
+                appendTo: '.search_criteria_form',
+                autoOpen: false,
+                closeOnEscape: false,
+                closeText: 'hide',
+                draggable: true,
+                modal: true,
+                resizable: true,
+                title: '系列の選択',
+                width: 840,
+                open: function(){$j(".ui-dialog-titlebar-close").hide();}
+            });
+            target.dialog('open');
+        } else {
+            alert('予期しないエラーが発生しました。画面を更新して再度、お試しください');
+        }
+    }
+    
+    function showRegionsSelect() {
+        var target = $j('.regionsSelect');
+        if (target) {
+            target.dialog({
+                appendTo: '.search_criteria_form',
+                autoOpen: false,
+                closeOnEscape: false,
+                closeText: 'hide',
+                draggable: true,
+                modal: true,
+                resizable: true,
+                title: '地域の選択',
+                width: 840,
+                open: function(){$j(".ui-dialog-titlebar-close").hide();}
+            });
+            target.dialog('open');
+        } else {
+            alert('予期しないエラーが発生しました。画面を更新して再度、お試しください');
+        }
+    }
+    
+    $j(document).ready(function(){
+        showSearchCriteriaPanel();
+    });
+  </script>
+  <apex:form style="width: 994px; margin-left: auto; margin-right: auto;">
+    <c:JEOL_WaitSearchPanel text="{!$Label.JEOL_MaintList_Label_Searching}"/>
+    <apex:variable value="{!$ObjectType.MaintenanceAccountBook__c.Fields}" var="fields" />
+    <apex:outputPanel id="order">
+      <apex:inputText id="orderBy" styleClass="orderInput" value="{!orderBy}" style="display: none;" />
+      <apex:actionFunction name="changeOrder" action="{!changeOrder}" oncomplete="mode();" rerender="searchResult, pageMessages" />
+    </apex:outputPanel>
+    <div class="screenname">
+      <img src="{!URLFOR($Resource.Images, 'images/icons/title_icon_orderplan.png')}" align="left" width="40px" />
+      <span id="title">{!$Label.JEOL_MaintList_Label_RenewalList}</span>
+    </div>
+    <div class="section button-area base-width">
+      <div class="section-body clearfix">
+        <apex:outputLink value="{!$Page.JEOL_MaintenanceListToRenewAdd}" styleClass="customButton">＋&nbsp;{!$Label.JEOL_MaintList_Label_AddManually}</apex:outputLink>
+<!--
+        <apex:outputLink value="{!URLFOR($Action.MaintenanceContractManagement__c.New)}" styleClass="customButton" style="margin-left: 10px;">＋&nbsp;{!$Label.JEOL_MaintList_Label_NewRow}</apex:outputLink>
+-->
+      </div>
+    </div>
+    
+    <div id="searchPanel">
+      <div>
+        <img id="close_icon" src="{!URLFOR($Resource.Images, 'images/searchPageImage/btn_close.png')}" align="left" valign="top" width="36px" onclick="hideSearchCriteriaPanel()"/>
+        <img id="open_icon" src="{!URLFOR($Resource.Images, 'images/searchPageImage/btn_open.png')}" align="left" valign="top" width="36px" onclick="showSearchCriteriaPanel()"/>
+        <div id="serch_title">{!$Label.JEOL_MaintList_Label_SearchFilter}</div>
+      </div>
+      <div id="search_criteria">
+        <apex:outputPanel layout="block" id="search_criteria_form" styleClass="search_criteria_form">
+          <table id="search_criteria_table" class="search_criteria_table">
+          
+            <!-- ROW 1 -->
+            <tr>
+             <td class="label" style="width: 180px;" >
+                <apex:outputText value="{!$Label.JEOL_MaintList_Label_RenewalMonth}"/>
+              </td>
+              <td colspan="3">
+                <apex:inputText value="{!renewalMonth}" id="renewalMonth" styleClass="input" html-placeholder="yyyymm" maxlength="6"/>
+              </td>
+             <td class="label">
+                <apex:outputText value="前年オーダ番号"/>
+              </td>
+              <td>
+                <apex:inputText value="{!lastYearSalesOrder}" id="lastYearSalesOrder" styleClass="input" />
+              </td>
+            </tr>
+            
+            <!-- ROW 2 -->
+            <tr>
+              <td class="label">
+                <apex:selectRadio layout="lineDirection" value="{!custCodeType}" style="float: right;">
+                    <apex:selectOptions value="{!ListAccountTypeCode}"/>
+                </apex:selectRadio>
+              </td>
+              <td style="width: 140px;">
+                <apex:inputText value="{!customerCode}" id="customrCode" styleClass="input" maxlength="9"/>
+              </td>
+              <td class="label"  style="width: 160px;">
+                <apex:selectRadio layout="lineDirection" value="{!custNameType}" style="float: right;">
+                    <apex:selectOptions value="{!ListAccountTypeName}"/>
+                </apex:selectRadio>
+              </td>
+              <td>
+                <apex:inputText value="{!customerName}" id="customrName" styleClass="input" maxlength="255" />
+              </td>
+              <td class="label">
+                    <apex:outputText value="出荷先住所"/>
+              </td>
+              <td>
+                <apex:inputText value="{!shipmentAddress}" id="shipmentAddress" styleClass="input" maxlength="255" />
+              </td>
+            </tr>            
+            <tr>
+              <td class="label">
+                    <apex:outputText value="本体号機"/>
+              </td>
+              <td>
+                <apex:inputText value="{!unitBody}" id="unitBody" styleClass="input" maxlength="255" />
+              </td>
+              <td class="label">
+                    <apex:outputText value="更新担当者"/>
+              </td>
+              <td>
+                <apex:inputText value="{!jeolPipelineResponsible}" id="jeolPipelineResponsible" styleClass="input" maxlength="255" />
+              </td>
+              <td class="label">
+                    <apex:outputText value="NET保守区分"/>
+              </td>
+              <td>
+                <apex:selectList styleClass="input" value="{!netMaintenance}" id="netMaintenance" style="width: 132px;" size="1">
+                  <apex:selectOptions value="{!ListNetMaintenance}" />
+                </apex:selectList>
+              </td>
+            </tr>
+            <tr>
+
+              <td class="label" >
+                <apex:outputText value="{!$Label.JEOL_MaintList_Label_ProductCode}" />
+              </td>
+              <td>
+                <apex:actionFunction name="seriesSelect" oncomplete="showSeriesSelect();" rerender="seriesSelectPanel" />
+                <input id="seriesSelectButton" onclick="seriesSelect();" type="button" class="btn input" value="選択する" style="height: 22px; width:132px; padding: 2px 1px;" />
+              </td>
+
+            
+              <td class="label">
+                <apex:outputText value="選択系列" />
+              </td>
+              <td colspan="3" style="max-width: 300px;">
+                <div style="width: 100%; overflow: hidden; vertical-align: middle; text-overflow: ellipsis; white-space: nowrap; line-height: 29px;">
+                  <apex:outputText value="{!SelectedSeries}" id="SelectedSeries"/>
+                </div>
+              </td>
+            </tr>
+            
+            
+            <tr>
+              <td class="label" style="width: 90px;" >
+                <apex:outputText value="{!$Label.JEOL_MaintList_Label_Area}" />
+              </td>
+              <td >
+                <apex:actionFunction name="regionsSelect" oncomplete="showRegionsSelect();" rerender="regionsSelectPanel" />
+                <input id="regionsSelectButton" onclick="regionsSelect();" type="button" class="btn input" value="選択する" style="height: 22px; width:132px; padding: 2px 1px;" />
+              </td>
+
+              <td class="label">
+                <apex:outputText value="選択地域" />
+              </td>
+              <td colspan="3" style="max-width: 300px;">
+                <div style="width: 100%; overflow: hidden; vertical-align: middle; text-overflow: ellipsis; white-space: nowrap; line-height: 29px;">
+                  <apex:outputText value="{!SelectedRegions}" id="SelectedRegions"/>
+                </div>
+              </td>
+            </tr>
+          </table>
+          <div id="buttons" >
+            <apex:commandLink value="{!$Label.JEOL_MaintList_Label_Clear}" styleClass="button_white" action="{!doFormClear}" rerender="search_criteria_form, searchResult" style="text-decoration: none;" />
+            <apex:commandLink value="{!$Label.JEOL_MaintList_Label_Search}" styleClass="button_green" action="{!doSearch}" rerender="searchResult" style="text-decoration: none;" onclick="showWaitPanel();" oncomplete="hideWaitPanel();" />
+          </div>
+
+          <apex:outputPanel styleClass="seriesSelect" layout="block">
+            <apex:outputPanel layout="block" styleClass="seriesSelect-header">
+              <h2>検索したい系列を選んで下さい。</h2>
+            </apex:outputPanel>
+            <apex:outputPanel layout="block" styleClass="clearfix" style="margin: 8px 0 8px 0; padding: 8px; border-bottom: 1px solid #ccc;">
+              <apex:commandButton value="すべて選択" action="{!seriesSelectAllSelect}" rerender="seriesSelectPanel" />
+              <apex:commandButton value="選択解除" action="{!seriesSelectAllDeselect}" rerender="seriesSelectPanel" />
+              <apex:outputPanel styleClass="processNow" layout="block" style="display: inline-block; maring: 0 8px 0 0; float: right; display: none;">
+                <apex:image value="/img/loading32.gif" height="16px" style="display: inline-block; margin: 0 8px 0 0;" />
+                <apex:outputText value="通信中..." />
+              </apex:outputPanel>
+            </apex:outputPanel>
+            <apex:outputPanel id="seriesSelectPanel" layout="block" styleClass="selectSeries clearfix">
+              <apex:repeat value="{!SeriesOptions}" var="seriesComp">
+                <div class="seriesItem">
+                  <apex:inputCheckBox id="selectTarget" value="{!seriesComp.isSelected}" />
+                  <apex:outputLabel for="selectTarget" value="{!seriesComp.option.Label}" />
+                </div>
+              </apex:repeat>
+            </apex:outputPanel>
+            <apex:outputPanel styleClass="selectButtons clearfix" layout="block" style="margin: 12px 0 0 0; border-top: 1px solid #ccc;">
+              <apex:commandlink styleClass="button_white" value="キャンセル" action="{!seriesSelectCancel}" onclick="$j('.processNow').fadeIn();" oncomplete="$j('.seriesSelect').dialog('close');$j('.processNow').hide();$j('#seriesSelectButton').blur();" rerender="seriesSelectPanel" />
+              <apex:commandlink styleClass="button_green" value="適用する" action="{!seriesSelectApply}" style="color: white;" onclick="$j('.processNow').fadeIn();" oncomplete="$j('.seriesSelect').dialog('close');$j('.processNow').hide();$j('#seriesSelectButton').blur();" rerender="seriesSelectPanel, SelectedSeries" />
+            </apex:outputPanel>
+          </apex:outputPanel>
+        
+          <apex:outputPanel styleClass="regionsSelect" layout="block">
+            <apex:outputPanel layout="block" styleClass="regionsSelect-header">
+              <h2>検索したい地域を選んで下さい。</h2>
+            </apex:outputPanel>
+            <apex:outputPanel layout="block" styleClass="clearfix" style="margin: 8px 0 8px 0; padding: 8px; border-bottom: 1px solid #ccc;">
+              <apex:commandButton value="すべて選択" action="{!regionsSelectAllSelect}" rerender="regionsSelectPanel" />
+              <apex:commandButton value="選択解除" action="{!regionsSelectAllDeselect}" rerender="regionsSelectPanel" />
+              <apex:outputPanel styleClass="processNow" layout="block" style="display: inline-block; maring: 0 8px 0 0; float: right; display: none;">
+                <apex:image value="/img/loading32.gif" height="16px" style="display: inline-block; margin: 0 8px 0 0;" />
+                <apex:outputText value="通信中..." />
+              </apex:outputPanel>
+            </apex:outputPanel>
+            <apex:outputPanel id="regionsSelectPanel" layout="block" styleClass="selectRegions clearfix">
+              <apex:repeat value="{!RegionsOptions}" var="regionsComp">
+                <div class="regionsItem">
+                  <apex:inputCheckBox id="selectTarget" value="{!regionsComp.isSelected}" />
+                  <apex:outputLabel for="selectTarget" value="{!regionsComp.option.Label}" />
+                </div>
+              </apex:repeat>
+            </apex:outputPanel>
+            <apex:outputPanel styleClass="selectButtons clearfix" layout="block" style="margin: 12px 0 0 0; border-top: 1px solid #ccc;">
+              <apex:commandlink styleClass="button_white" value="キャンセル" action="{!regionsSelectCancel}" onclick="$j('.processNow').fadeIn();" oncomplete="$j('.regionsSelect').dialog('close');$j('.processNow').hide();$j('#regionsSelectButton').blur();" rerender="regionsSelectPanel" />
+              <apex:commandlink styleClass="button_green" value="適用する" action="{!regionsSelectApply}" style="color: white;" onclick="$j('.processNow').fadeIn();" oncomplete="$j('.regionsSelect').dialog('close');$j('.processNow').hide();$j('#regionsSelectButton').blur();" rerender="regionsSelectPanel, SelectedRegions" />
+            </apex:outputPanel>
+          </apex:outputPanel>
+        
+        
+        </apex:outputPanel>
+      </div>
+    </div>
+    <apex:outputPanel layout="block" id="searchResult" >
+      <apex:pageMessages id="pageMessages" />
+      <apex:outputPanel rendered="{!MaintenanceContractManagements.size > 0}">
+        <table class="record-list" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-bottom:0px;">
+          <col class="clm00" />
+          <col class="clm01" />
+          <col class="clm02" />
+          <col class="clm03" />
+          <col class="clm04" />
+          <col class="clm05" />
+          <col class="clm06" />
+          <col class="clm07" />
+          <col class="clm08" />
+        
+          <tr class="contents_title">
+            <td colspan="9" style="padding: 0;">
+
+                <table class="searchresulttable" width="100%"><tr>
+                <td width="50%">
+
+              <div class="in_contents_title">{!$Label.JEOL_MaintList_Label_SearchResults}</div>
+
+              </td><td width="50%" align="right">
+              <apex:commandButton action="{!redirectMultiAnnai}" value="{!$Label.JEOL_MaintList_Label_MassiveGuidance}" style="font-size:16px;margin-top:3px;margin-right:8px;"/>                    
+              <apex:commandButton onclick="window.open('{!redirectExportCsvURL}');" value="{!$Label.JEOL_MaintList_Label_ExportExcel}" style="font-size:16px;margin-top:3px;" rendered="{!hasPermissionExcelOutput}"/>   
+           
+              <!-- <apex:commandButton onclick="window.open('/00Op0000000OkCz?pv2={!lastSearchResults}');" value="{!$Label.JEOL_MaintList_Label_ExportExcel}" style="font-size:16px;margin-top:3px;"/> <!-- &export=1&enc=UTF-8&xf=xls  -->      
+              </td>
+              </tr></table>
+
+            </td>
+          </tr>
+          <tr class="koumoku">
+                <th>
+                    <span>No</span>
+                </th>
+                <th>
+                </th>
+                <th>
+                  <a href="javascript:void(0);" onclick="callChangeOrder('Name');">
+                    <apex:outputText value="{!$Label.JEOL_MaintList_Label_PipelineNo}" />
+                    <apex:outputText rendered="{!orderBy=='Name' && (!orderDesc)}">△</apex:outputText>
+                    <apex:outputText rendered="{!orderBy=='Name' && orderDesc}">▽</apex:outputText>
+                  </a>
+                  <br/>
+                  <a href="javascript:void(0);" onclick="callChangeOrder('UnitBody__c');">
+                    <apex:outputText value="{!$ObjectType.MaintenanceContractManagement__c.fields.UnitBody__c.Label}" />
+                    <apex:outputText rendered="{!orderBy=='UnitBody__c' && (!orderDesc)}">△</apex:outputText>
+                    <apex:outputText rendered="{!orderBy=='UnitBody__c' && orderDesc}">▽</apex:outputText>
+                  </a>
+                </th>
+                <th>
+                  <a href="javascript:void(0);" onclick="callChangeOrder('NewOdrSalesAccount__r.Name');">
+                    <apex:outputText value="{!$ObjectType.MaintenanceContractManagement__c.Fields.NewOdrSalesAccount__c.label}" />
+                    <apex:outputText rendered="{!orderBy=='NewOdrSalesAccount__r.Name' && (!orderDesc)}">△</apex:outputText>
+                    <apex:outputText rendered="{!orderBy=='NewOdrSalesAccount__r.Name' && orderDesc}">▽</apex:outputText>
+                  </a>
+                  <br/>
+                  <a href="javascript:void(0);" onclick="callChangeOrder('NewOdrShipmentAccount__r.Name');">
+                    <apex:outputText value="{!$ObjectType.MaintenanceContractManagement__c.Fields.NewOdrShipmentAccount__c.label}" />
+                    <apex:outputText rendered="{!orderBy=='NewOdrShipmentAccount__r.Name' && (!orderDesc)}">△</apex:outputText>
+                    <apex:outputText rendered="{!orderBy=='NewOdrShipmentAccount__r.Name' && orderDesc}">▽</apex:outputText>
+                  </a>
+                </th>
+                <th>
+                  <a href="javascript:void(0);" onclick="callChangeOrder('NewOdrContractAmountt__c');">
+                    <apex:outputText value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrContractAmountt__c.Label}" />
+                    <apex:outputText rendered="{!orderBy=='NewOdrContractAmountt__c' && (!orderDesc)}">△</apex:outputText>
+                    <apex:outputText rendered="{!orderBy=='NewOdrContractAmountt__c' && orderDesc}">▽</apex:outputText>
+                  </a>
+                  <br/>
+                  <a href="javascript:void(0);" onclick="callChangeOrder('NewOdrMaintenancePeriodText__c');">
+                    <apex:outputText value="{!$ObjectType.MaintenanceContractManagement__c.fields.NewOdrMaintenancePeriodText__c.Label}" />
+                    <apex:outputText rendered="{!orderBy=='NewOdrMaintenancePeriodText__c' && (!orderDesc)}">△</apex:outputText>
+                    <apex:outputText rendered="{!orderBy=='NewOdrMaintenancePeriodText__c' && orderDesc}">▽</apex:outputText>
+                  </a>
+                  <br/>
+                  <a href="javascript:void(0);" onclick="callChangeOrder('Memo__c');">
+                    <apex:outputText value="{!$ObjectType.MaintenanceContractManagement__c.fields.Memo__c.Label}" />
+                    <apex:outputText rendered="{!orderBy=='Memo__c' && (!orderDesc)}">△</apex:outputText>
+                    <apex:outputText rendered="{!orderBy=='Memo__c' && orderDesc}">▽</apex:outputText>
+                  </a>
+                </th>
+                <th>
+                  <a href="javascript:void(0);" onclick="callChangeOrder('RenewalNoticeCreated__c');">
+                    <apex:outputText value="{!$Label.JEOL_MaintList_Label_GuidanceCreated}" />
+                    <apex:outputText rendered="{!orderBy=='RenewalNoticeCreated__c' && (!orderDesc)}">△</apex:outputText>
+                    <apex:outputText rendered="{!orderBy=='RenewalNoticeCreated__c' && orderDesc}">▽</apex:outputText>
+                  </a>
+                  <br/>
+                  <a href="javascript:void(0);" onclick="callChangeOrder('RenewalNoticeSentDate__c');">
+                    <apex:outputText value="{!$Label.JEOL_MaintList_Label_Sent}" />
+                    <apex:outputText rendered="{!orderBy=='RenewalNoticeSentDate__c' && (!orderDesc)}">△</apex:outputText>
+                    <apex:outputText rendered="{!orderBy=='RenewalNoticeSentDate__c' && orderDesc}">▽</apex:outputText>
+                  </a>
+                </th>
+                <th>
+                  <a href="javascript:void(0);" onclick="callChangeOrder('QuotationCreated__c');">
+                    <apex:outputText value="{!$Label.JEOL_MaintList_Label_QuotCreated}" />
+                    <apex:outputText rendered="{!orderBy=='QuotationCreated__c' && (!orderDesc)}">△</apex:outputText>
+                    <apex:outputText rendered="{!orderBy=='QuotationCreated__c' && orderDesc}">▽</apex:outputText>
+                  </a>
+                  <br/>
+                  <a href="javascript:void(0);" onclick="callChangeOrder('QuotationSentDate__c');">
+                    <apex:outputText value="{!$Label.JEOL_MaintList_Label_Sent}" />
+                    <apex:outputText rendered="{!orderBy=='QuotationSentDate__c' && (!orderDesc)}">△</apex:outputText>
+                    <apex:outputText rendered="{!orderBy=='QuotationSentDate__c' && orderDesc}">▽</apex:outputText>
+                  </a>
+                </th>
+                <th>
+                  <a href="javascript:void(0);" onclick="callChangeOrder('ContractSentDate__c');">
+                    <apex:outputText value="{!$Label.JEOL_MaintList_Label_ContractSent}" />
+                    <apex:outputText rendered="{!orderBy=='ContractSentDate__c' && (!orderDesc)}">△</apex:outputText>
+                    <apex:outputText rendered="{!orderBy=='ContractSentDate__c' && orderDesc}">▽</apex:outputText>
+                  </a>
+                </th>
+                <th>
+                  <a href="javascript:void(0);" onclick="callChangeOrder('PreviousYearOrder__r.name');">
+                    <apex:outputText value="{!$Label.JEOL_MaintList_Label_PrevYearSalesNo}" />
+                    <apex:outputText rendered="{!orderBy=='PreviousYearOrder__r.name' && (!orderDesc)}">△</apex:outputText>
+                    <apex:outputText rendered="{!orderBy=='PreviousYearOrder__r.name' && orderDesc}">▽</apex:outputText>
+                  </a>
+                  <br/>
+                  <a href="javascript:void(0);" onclick="callChangeOrder('PreviousYearPipeline__r.Name');">
+                    <apex:outputText value="{!$Label.JEOL_MaintList_Label_PrevYearPLNo}" />
+                    <apex:outputText rendered="{!orderBy=='PreviousYearPipeline__r.Name' && (!orderDesc)}">△</apex:outputText>
+                    <apex:outputText rendered="{!orderBy=='PreviousYearPipeline__r.Name' && orderDesc}">▽</apex:outputText>
+                  </a>
+                </th>
+          </tr>
+        </table>
+        
+        <!-- 一覧 -->
+        <div class="fakeContainer" style="margin-top:0px; margin-bottom:0px;">
+          <apex:variable value="{!(ssc.PageNumber-1)*ssc.PageSize+1}" var="baseRowNumber"/>
+          <table id="viewTable" class="record-list" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-top:0px; margin-bottom:0px;">
+            <col class="clm00" />
+            <col class="clm01" />
+            <col class="clm02" />
+            <col class="clm03" />
+            <col class="clm04" />
+            <col class="clm05" />
+            <col class="clm06" />
+            <col class="clm07" />
+            <col class="clm08" />
+            <apex:repeat value="{!MaintenanceContractManagements}" var="MaintenanceContractManagement" >
+              <tr class="contents">
+                    <td>
+                    
+                      <apex:inputField value="{!MaintenanceContractManagement.rec.TechnicalAlwaysFalse__c}" />
+                    <!--
+                      <apex:inputCheckbox >
+                        <apex:actionSupport event="onclick" action="{!saveFlags}" rerender="dummy">
+                            <apex:param name="dataId" assignto="{!dataId}" value="{!MaintenanceContractManagement.rec.Id}"/>
+                        </apex:actionSupport>
+                      </apex:inputCheckbox>
+                    -->
+                      <apex:outputText value="{!baseRowNumber+MaintenanceContractManagement.rowNumber}" />
+                    </td>
+                    <td>
+                      <apex:outputLink styleClass="field-body" value="{!$Page.JEOL_MaintenanceDetail}" >
+                        <apex:param name="id" value="{!MaintenanceContractManagement.rec.id}" />
+                        <apex:outputText value="{!$Label.JEOL_MaintList_Label_Edit}" />
+                      </apex:outputLink>
+                    </td>
+                    <td >
+                      <a href="{!$Page.JEOL_MaintenanceDetailView + '?id=' + MaintenanceContractManagement.rec.id}"
+                         id="{! MaintenanceContractManagement.rec.Id}"
+                         onblur="LookupHoverDetail.getHover('{! MaintenanceContractManagement.rec.Id}').hide();"
+                         onfocus="LookupHoverDetail.getHover('{! MaintenanceContractManagement.rec.Id}', '/{! MaintenanceContractManagement.rec.Id}/m?retURL=%2F{! MaintenanceContractManagement.rec.Id}&isAjaxRequest=1').show();"
+                         onmouseout="LookupHoverDetail.getHover('{! MaintenanceContractManagement.rec.Id}').hide();"
+                         onmouseover="LookupHoverDetail.getHover('{! MaintenanceContractManagement.rec.Id}', '/{! MaintenanceContractManagement.rec.Id}/m?retURL=%2F{! MaintenanceContractManagement.rec.Id}&isAjaxRequest=1').show();"><apex:outputText value="{!MaintenanceContractManagement.rec.Name}" /></a>
+                      <br/>
+                      <apex:outputField value="{!MaintenanceContractManagement.rec.UnitBody__c}" />
+                    </td>
+                    <td >
+                        <apex:outputField value="{!MaintenanceContractManagement.rec.NewOdrSalesAccount__c}" />
+                        <br/>
+                        <apex:outputField value="{!MaintenanceContractManagement.rec.NewOdrShipmentAccount__c}" />
+                    </td>
+                    <td >
+                      <apex:outputField value="{!MaintenanceContractManagement.rec.NewOdrContractAmountt__c}" />
+                      <br/>
+                      <apex:outputField value="{!MaintenanceContractManagement.rec.NewOdrMaintenancePeriodText__c}" />
+                      <br/>
+                      <apex:outputPanel rendered="{!MaintenanceContractManagement.rec.Memo__c != NULL}">&nbsp;<br/>
+                          <div style="width:637px; height: 16px; overflow-x:overlay; overflow-y: hidden;word-wrap: break-word; word-break: break-all;">
+                              <apex:outputField value="{!MaintenanceContractManagement.rec.Memo__c}" />                      
+                          </div>
+                      </apex:outputPanel>
+                    </td>
+                   <td >
+                      <apex:outputField value="{!MaintenanceContractManagement.rec.RenewalNoticeCreated__c}" />
+                      <br/>
+                      <apex:outputField value="{!MaintenanceContractManagement.rec.RenewalNoticeSentDate__c}" />
+                      <br/>
+                      <apex:outputPanel rendered="{!MaintenanceContractManagement.rec.Memo__c != NULL}">&nbsp;<br/>&nbsp;</apex:outputPanel>
+                    </td>
+                   <td >
+                      <apex:outputField value="{!MaintenanceContractManagement.rec.QuotationCreated__c}" />
+                      <br/>
+                      <apex:outputField value="{!MaintenanceContractManagement.rec.QuotationSentDate__c}" />
+                      <br/>
+                      <apex:outputPanel rendered="{!MaintenanceContractManagement.rec.Memo__c != NULL}">&nbsp;<br/>&nbsp;</apex:outputPanel>
+                    </td>
+                   <td >
+                      <apex:outputField value="{!MaintenanceContractManagement.rec.ContractSentDate__c}" />
+                      <br/>
+                      <apex:outputPanel rendered="{!MaintenanceContractManagement.rec.Memo__c != NULL}">&nbsp;<br/>&nbsp;</apex:outputPanel>
+                    </td>
+                   <td >
+                      <apex:outputField value="{!MaintenanceContractManagement.rec.PreviousYearOrder__c}" />
+                      <br/>
+                      <apex:outputField value="{!MaintenanceContractManagement.rec.PreviousYearPipeline__c}" />
+                      <br/>
+                      <apex:outputPanel rendered="{!MaintenanceContractManagement.rec.Memo__c != NULL}">&nbsp;<br/>&nbsp;</apex:outputPanel>
+                    </td>
+              </tr>
+            </apex:repeat>
+          </table>
+        </div>
+      
+        <!-- ページ遷移欄-->
+        <table class="record-list" border="1" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-top:0px; margin-bottom:0px;">
+          <col class="clm00" />
+          <col class="clm01" />
+          <col class="clm02" />
+          <col class="clm03" />
+          <col class="clm04" />
+          <col class="clm05" />
+          <col class="clm06" />
+          <col class="clm07" />
+          <col class="clm08" />
+          <apex:variable value="{!MaintenanceContractManagements.size}" var="size" />
+          <tr class="menu">
+            <td colspan="9" style="padding: 0;">
+              <table id="each_menu">
+                <tr>
+                  <td align="left" width="33%" style="border: 0px; vertical-align: middle;" >
+                    <apex:outputPanel rendered="{!ssc.PageSize != null}">
+                      <apex:outputText value="{!(ssc.PageNumber - 1) * ssc.PageSize + 1} - {!(ssc.PageNumber - 1) * ssc.PageSize + size}/{!ssc.ResultSize}" />
+                    </apex:outputPanel>
+                    <apex:outputText value="     {!$Label.JEOL_MaintList_Label_ShowBefore}" />
+                    <apex:selectList id="pageSize" value="{!pageSize}" size="1" disabled="{!ssc.ResultSize < 9}">
+                      <apex:actionSupport event="onchange" action="{!setSizeSaveCurrentPageSize}" rerender="searchResult" oncomplete="mode();"/>
+                      <apex:selectOption itemValue="10" itemLabel="10"/>
+                      <apex:selectOption itemValue="20" itemLabel="20"/>
+                      <apex:selectOption itemValue="50" itemLabel="50"/>
+                    </apex:selectList>
+                    <apex:outputLink value="javascript:void(0);" onclick="allViewMode();">{!$Label.JEOL_MaintList_Label_ShowAfter}</apex:outputLink>
+                  </td>
+                  <td align="center" width="33%" style="border: 0px; vertical-align: middle ;">
+                    <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 != 1}">
+                      <apex:actionSupport event="onclick" action="{!firstAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="mode();hideWaitPanel();" />
+                      <apex:outputText value="｜◀" />
+                    </apex:outputLink>
+                    <apex:outputText value="｜◀" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 == 1}"/>
+                    <apex:outputText value=" " />
+                    <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 != 1}" >
+                      <apex:actionSupport event="onclick" action="{!previousAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="mode();hideWaitPanel();" />
+                      <apex:outputText value="◀ {!$Label.JEOL_MaintList_Label_Previous}" />
+                    </apex:outputLink>
+                    <apex:outputText value="◀ {!$Label.JEOL_MaintList_Label_Previous}" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 == 1}"/>
+                    <apex:outputText value=" " />
+                    <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size != ssc.ResultSize}">
+                      <apex:actionSupport event="onclick" action="{!nextAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="mode();hideWaitPanel();" />
+                      <apex:outputText value="{!$Label.JEOL_MaintList_Label_Next} ▶" />
+                    </apex:outputLink>
+                    <apex:outputText value="{!$Label.JEOL_MaintList_Label_Next} ▶" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size == ssc.ResultSize}"/>
+                    <apex:outputText value=" " />
+                    <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size != ssc.ResultSize}">
+                      <apex:actionSupport event="onclick" action="{!lastAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="mode();hideWaitPanel();" />
+                      <apex:outputText value="▶｜" />
+                    </apex:outputLink>
+                    <apex:outputText value="▶｜" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size == ssc.ResultSize}"/>
+                  </td>
+                  <td align="right" width="33%" style="border: 0px; vertical-align: middle ;">
+                    <apex:outputText value="{!$Label.JEOL_MaintList_Label_Page}　" />
+                    <apex:input type="number" value="{!ssc.PageNumber}" size="2" style="width: 40px;" disabled="{!ssc.PageSize == 0}">
+                      <apex:actionSupport event="onchange" action="{!setJumpSaveCurrentPageSize}" rerender="searchResult" oncomplete="mode();"/>
+                    </apex:input>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </apex:outputPanel>
+      <apex:outputpanel rendered="{!MaintenanceContractManagements.size == null || MaintenanceContractManagements.size <= 0}" >
+        <table class="record-list" border="1" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-top: 0; margin-bottom: 0;">
+          <tr class="contents_title">
+            <td >
+              <div class="in_contents_title">{!$Label.JEOL_MaintList_Message_NoData}</div>
+            </td>
+          </tr>
+        </table>
+      </apex:outputpanel>
+    </apex:outputPanel>
+  </apex:form>
+</apex:page>

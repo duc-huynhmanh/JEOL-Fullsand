@@ -1,0 +1,112 @@
+<apex:page showHeader="false" sidebar="false">
+    <style type="text/css">
+        div.mnucontainer{
+            margin-left:auto;
+            margin-right:auto;
+        }
+
+        div.imgCellBox {
+            //margin: 10px 10px 10px 10px;
+            font-family: Arial, Helvetica, sans-serif;
+            //font-weight: bold;
+            color: #000000;
+            //font-size: 120%;
+        }
+
+        div.imgCellBox ul {
+            border: none;
+            margin: 0;
+            padding: 0;
+            float: left;
+            clear: both;
+            margin-bottom: 24px;
+        }
+
+        div.imgCellBox p {
+            border: none;
+            margin: 10px 10px 0px 10px;
+            padding: 0;
+            color: #333;
+            //font-size: 120%;
+            float: left;
+            clear: both;
+            font-size: 18px;
+        }
+
+        div.imgCellBox li {
+            margin: 0;
+            padding: 0px 2px 2px 2px;
+            float:left;
+            width: 134px;
+            height: 133px;
+            margin-left: 10px;
+            margin-top: 8px;
+            border: solid 1px #ccc;
+            border-radius: 6px;//fkato
+            list-style-type: none;
+            vertical-align: top;
+            text-align: center;
+            overflow: hidden;
+            box-shadow: 4px 4px 4px #ddd;
+            //line-height: 2em;
+            box-sizing:border-box;
+        }
+        
+        div.imgCellBox li:hover {
+            background-color: #eee;
+        }
+
+        div.imgCellBox li a {
+            //color:#008800;
+            color:#555;
+            //font-weight: bold;
+            text-decoration:none;
+            overflow: hidden;
+            outline: none;
+            white-space:normal;
+            box-sizing: border-box;
+            height: 40px;
+        }
+
+        div.imgCellBox li img{
+            display:block;
+            margin-left:auto;
+            margin-right:auto;
+            text-align:center;
+            margin-bottom:6px;
+            width:69px;
+            margin-top: -5px;
+        }
+        div.imgCellBox li a > div{
+            display: table;
+            width: 100%;
+            height: 43px;
+        }
+        
+        div.imgCellBox li a > div > div{
+            display: table-cell;
+            vertical-align: middle;
+        }
+        div.imgCellBox ul li.font1 img{
+            margin-top: -10px;
+        }
+        div.imgCellBox li.font1 a > div > div{
+            font-size: 19px;
+        }
+        div.imgCellBox li.font2 a > div > div, div.imgCellBox li.font4 a > div > div{
+            font-size: 16px;
+        }
+        div.imgCellBox li.font3 a > div > div, div.imgCellBox li.font5 a > div > div{
+            font-size: 13px;
+        }
+        div.imgCellBox li.font6 a > div > div{
+            font-size: 12px;
+        }
+        div.imgCellBox li.font3 img {
+            margin-bottom: 1px;
+        }
+        div.imgCellBox li.font6 img {
+            margin-bottom: -2px;
+        }
+    </style>
+</apex:page>

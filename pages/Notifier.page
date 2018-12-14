@@ -1,0 +1,11 @@
+<apex:page showHeader="fase" sidebar="false" controller="NotiferController">
+ <apex:form >
+   <apex:dataTable var="n" value="{!Notifiers}" id="list" rendered="{!NOT(ISNULL(Notifiers))}">
+      <apex:column >
+          <apex:outputText ><font color="{!n.headerFontColor__c}" size="{!n.headerFontSize__c}"><b>{!n.orderNumber__c}.{!n.name}</b></font></apex:outputText><BR/>
+          <apex:outputText ><font color="{!n.contentFontColor__c}" size="{!n.contentFontSize__c}">{!n.contents__c}</font></apex:outputText>
+          <apex:outputLink value="{!n.detailUrl__c}" target="_blank" rendered="{!NOT(ISNULL(n.detailUrl__c))}"><font color="{!n.contentFontColor__c}" size="{!n.contentFontSize__c}">詳細をご確認ください。</font></apex:outputLink><P/>
+      </apex:column>
+   </apex:dataTable>
+ </apex:form>
+</apex:page>

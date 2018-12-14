@@ -1,0 +1,21 @@
+<apex:page controller="CallOutToSPACtrl" showHeader="false" standardStylesheets="true" applyHtmlTag="false" applyBodyTag="false" doctype="html-5.0">
+	<apex:includeScript value="{!URLFOR($Resource.JQuery)}" />
+	<apex:form >
+	<apex:outputPanel rendered="{!calloutStatus == null}" style="display: block; text-align: center; width: 100%">
+		<img width="160px" src="{!URLFOR($Resource.SPAElements,'/elements/loading.gif')}"/>
+		<p style="font-size: 20px">Sending...</p>
+	</apex:outputPanel>
+	<apex:outputPanel rendered="{!calloutStatus == 200}" style="display: block; text-align: center; width: 100%">
+		<p style="font-size: 30px">Data was sent successfully</p>
+	</apex:outputPanel>
+	<apex:outputPanel rendered="{!calloutStatus != null && calloutStatus != 200}" style="display: block; text-align: center; width: 100%">
+		<p style="font-size: 30px">Error happened</p>
+	</apex:outputPanel>
+	<script type="text/javascript">
+   		$('document').ready(function(){
+   			startSending()
+   		});
+	</script>
+	<apex:actionFunction rendered="{!calloutStatus == null}" name="startSending" action="{!sendToSpa}" />
+	</apex:form>
+</apex:page>

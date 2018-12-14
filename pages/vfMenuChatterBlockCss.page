@@ -1,0 +1,50 @@
+<apex:page showHeader="false" sidebar="false">
+    <style type="text/css">
+        div.openChatterBlock{
+            clear: both;
+            padding-top:20px;
+            padding-left:20px;
+        }
+
+        div.openChatterBlock input {
+            display: none;
+        }
+
+        div.openChatterBlock label {
+            color: #333;
+            cursor: pointer;
+            padding: 5px 10px;
+            float: left;
+            border: solid 1px #ccc;
+            margin-left: -1px;
+            background: #fff;
+            font-weight: bold;
+            border-radius: 4px;
+            -moz-box-shadow: 2px 2px 2px #ddd;
+            -webkit-box-shadow: 2px 2px 2px #ddd;
+            box-shadow: 2px 2px 2px #ddd;
+        }
+
+        div.openChatterBlock label.checked {
+            color: #333;
+            background: #ccc;
+            font-weight: bold;
+            -moz-box-shadow: 0px 0px 0px #ddd;
+            -webkit-box-shadow: 0px 0px 0px #ddd;
+            box-shadow: 0px 0px 0px #ddd;
+        }
+
+        div.openChatterBlock label span{
+            display: block;
+            float: right;
+            vertical-align: middle;
+            margin-top: 2px;
+        }
+        div.chatterFeedBlock {
+            clear: both;
+            padding-top:10px;
+            padding-left:20px;
+            display:none;
+        }
+    </style>
+</apex:page>

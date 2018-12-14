@@ -1,0 +1,62 @@
+<apex:page >
+<html>
+<head>
+<!-- Javascript -->
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"/>
+    
+    <script type="text/javascript">
+        var j$ = jQuery.noConflict();
+
+        j$(function(){
+            j$("div.openChatterBlock").click(
+                function(){
+                    j$("div.chatterFeedBlock").slideToggle("slow", toggleChatterFeeds);
+                }
+            );
+        });
+    </script>
+
+    <script type="text/javascript">
+        function toggleChatterFeeds(){
+            var chkobj = j$("div.openChatterBlock input");
+            if(!chkobj.attr('checked')){
+                chkobj.attr('checked', 'checked');
+                j$("div.openChatterBlock label").addClass('checked');
+                j$("div.openChatterBlock label #textLabel").text('Chatterを非表示');
+            } else {
+                chkobj.removeAttr('checked');
+                j$("div.openChatterBlock label").removeClass('checked');
+                j$("div.openChatterBlock label #textLabel").text('Chatterを表示');
+            }
+        }
+    </script>
+
+    <script type="text/javascript">
+        function fixId(myid) {
+        　　return '#' + myid.replace(/(:|\.)/g,'\\\\$1');
+        }
+    </script>
+
+    <script type="text/javascript">
+        function gotoPage(pg, tg) {
+            if(pg.length == 0) {
+                return false;
+            }
+            if(typeof tg === "undefined" || tg == "_self"){
+                window.top.location = pg;
+            } else {
+                window.open(pg, tg);
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="mnucontainer">
+        <apex:insert name="chatterFeed"/>
+        <div class="imgCellBox">
+            <apex:insert name="menuBody"/>
+        </div>
+    </div>
+</body>
+</html>
+</apex:page>

@@ -1,0 +1,38 @@
+<apex:page >
+  <apex:sectionHeader title="設定ガイド"/>
+  <apex:pageBlock title="設定方法">
+     <apex:pageBlockSection title="動作イメージ">
+       リストビューでフォローしたいレコードを選択し、<br/>
+       「フォロー」ボタンをクリックすると一度にフォローできます。<br/>
+       <apex:image url="{!URLFOR($Resource.FollowButton, 'FollowButton/superfollow.png')}" />
+     </apex:pageBlockSection>
+  </apex:pageBlock> 
+  <apex:pageBlock title="設定方法">
+     <apex:outputText >「取引先」「取引先責任者」「ケース」「商談」にフォローボタンを設定する手順</apex:outputText>
+     <apex:pageBlockSection title="手順１" columns="2">
+           <p style="width:200px;text-align:left;">【設定】>【カスタマイズ】>【取引先】>【検索レイアウト】 >【取引先リストビュー】の【編集】をクリック</p>
+           <apex:image url="{!URLFOR($Resource.FollowButton, 'FollowButton/Step1.png')}" width="750px"/>
+     </apex:pageBlockSection>
+     <apex:pageBlockSection title="手順２">
+        <p style="width:150px;text-align:left;">フォローボタンを追加</p>
+        <apex:image url="{!URLFOR($Resource.FollowButton, 'FollowButton/Step2.png')}" width="700px" />
+     </apex:pageBlockSection>
+    </apex:pageBlock> 
+     
+   <apex:pageBlock title="カスタマイズ方法">
+    　フォローボタンを追加したいオブジェクトに対して下記の手順を行います
+     <apex:pageBlockSection title="手順１">
+        <p style="width:200px;text-align:left;">他のリストビューで利用しているカスタムボタンのコードをコピーするために【設定】>【カスタマイズ】>【取引先責任者】>【カスタムボタンとリンク】のフォローボタンの横の【編集】をクリックします</p>
+        <apex:image url="{!URLFOR($Resource.FollowButton, 'FollowButton/Step3.png')}" width="700px"/>
+     </apex:pageBlockSection>
+     <apex:pageBlockSection title="手順２">
+         <p style="width:150px;text-align:left;">カスタムコードをコピーします</p>
+        <apex:image url="{!URLFOR($Resource.FollowButton, 'FollowButton/Step4.png')}" width="700px"/>
+     </apex:pageBlockSection>
+     <apex:pageBlockSection title="手順３">
+         <p style="width:150px;text-align:left;">ボタンを追加したいオブジェクトにカスタムボタンを新規作成し、コピーしたコードを貼り付けます</p>
+        <apex:image url="{!URLFOR($Resource.FollowButton, 'FollowButton/Step5.png')}" width="700px"/>
+     </apex:pageBlockSection>
+  
+  </apex:pageBlock>
+</apex:page>

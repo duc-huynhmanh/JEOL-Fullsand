@@ -1,0 +1,55 @@
+<apex:page sidebar="false" showHeader="false" controller="clsChooseIcon">
+<html>
+<head>
+    <style>
+    #chatterBlock {
+        display:none;
+    }
+    </style>
+
+    <apex:include pageName="vfMenuChooseIconCss"/>
+    <script type="text/javascript">
+        function selectIcon(pIcon) {
+            setIcon(pIcon);
+            setTimeout( function() {
+                            window.opener.location.href="/{!JSENCODE($CurrentPage.parameters.item)}";
+                            window.close();
+                        }, 500 );
+        }
+    </script>
+</head>
+<body>
+    <apex:pageMessage severity="info" strength="1">
+        新たなアイコンを利用する場合は、128x128のpng画像をドキュメントの「MenuIcons」フォルダに格納して下さい。<br/>
+        次のページ等から入手可能です。<br />
+        <ul>
+        <li><apex:outputLink value="http://www.iconsdb.com/" target="_new">Free flat one color icons</apex:outputLink></li>
+        </ul>
+    </apex:pageMessage>
+
+    <apex:composition template="vfMenuTemplate">
+        <apex:define name="menuBody">
+            <apex:form >
+                <apex:actionFunction action="{!setIcon}" name="setIcon" rerender="">
+                    <apex:param name="pIconId" assignTo="{!IconId}" value="" />
+                </apex:actionFunction>
+            </apex:form>
+            <div class="imgCellBox">
+                <ul>
+                    <apex:repeat value="{!Icons}" var="ic">
+                        <li>
+                            <apex:outputPanel >
+                                <apex:outputLink value="#" onclick="selectIcon('{!ic.id}');">
+                                    <apex:image value="/servlet/servlet.ImageServer?id={!ic.id}&oid={!$Organization.Id}"/>
+                                    <div><div><apex:outputText value="{!ic.name}" /></div></div>
+                                </apex:outputLink>
+                            </apex:outputPanel>
+                        </li>
+                    </apex:repeat>            
+                </ul>
+            </div>
+        </apex:define>
+    </apex:composition>
+</body>
+</html>
+</apex:page>

@@ -1,0 +1,120 @@
+<apex:page showHeader="false" sidebar="false">
+    <style type="text/css">
+        div.mnucontainer{
+            margin-left:auto;
+            margin-right:auto;
+        }
+
+        div.imgCellBox {
+        }
+
+        div.imgCellBox ul {
+            display: block;
+            margin: 0;
+            padding: 0;
+            list-style-type: none;
+            text-align: left;
+            clear: both;
+            width:100%;
+        }
+
+        div.imgCellBox p {
+            display: block;
+            border: none;
+            margin: 20px 10px 0px 10px;
+            padding: 0;
+            font-weight: normal;
+            color: #333;
+            font-size: 18px;
+            float: left;
+            clear: both;
+        }
+
+        div.imgCellBox li {
+            display: block;
+            padding: 1px 3px; /* 項目のパディング（上下、左右） */
+            background-color: #fff; /* 項目の背景色 */
+            border: 1px #ccc solid;
+            width:31%;
+            margin-left: 1%;
+            float:left;
+            box-sizing: border-box;
+            margin-top: 6px;
+            border-radius: 4px;
+            box-shadow: 2px 2px 2px #ddd;
+        }
+
+        div.imgCellBox li a {
+            display: block;
+            position: relative; /* IE6用 */
+            color: #555;
+            //border-left: 4px #ffcc66 solid; /* リンクエリアの左境界線 */
+            text-decoration: none; /* テキストの下線（なし） */
+            font-size: 16px;
+            //font-weight: bold;
+            white-space:normal;
+            box-sizing:border-box;
+            height: 40px;
+        }
+
+        div.imgCellBox li a:hover{
+            //border-left-color: #ee7700; /* ポイント時の左境界線色 */
+        }
+
+        div.imgCellBox li:hover{
+            background-color: #eee;
+        }
+
+        div.imgCellBox li a > div{
+            display: table;
+            float: left;
+            width: calc(100% - 35px);
+        }
+        
+        div.imgCellBox li a > div > div{
+            display: table-cell;
+            vertical-align: middle;
+            height: 40px;
+        }
+        
+        div.imgCellBox li img{
+            -ms-interpolation-mode: bicubic;
+            width:24px;
+            margin-right:10px;
+            float: left;
+            margin: 6px 4px 0px 7px;
+            box-sizing: border-box;
+        }
+        div.imgCellBox li a > div > div {
+            font-weight: bold;
+        }
+        div.imgCellBox p{
+            font-weight: bold !important;
+        }
+        td#bodyCell.oRight{
+            font-family: 'MS UI Gothic','MS PGothic','Hiragino Kaku Gothic Pro','Osaka','Arial','Helvetica',sans-serif;
+        }
+        div.imgCellBox ul li.type1{
+            width: 80%;
+        }
+        div.imgCellBox ul li.type2{
+            width: 49%;
+        }
+        div.imgCellBox ul li.type3{
+            width: 32%;
+        }
+        div.imgCellBox ul li.type4{
+            width: 24%;
+        }
+        div.imgCellBox ul li.type5{
+            width: 19%;
+        }
+        div.imgCellBox ul li.type5 a > div > div, div.imgCellBox ul li.type4 a > div > div {
+            font-size: 15px;
+            height: 45px;
+        }
+        div.imgCellBox li.type4 img, div.imgCellBox li.type5 img {
+            margin: 10px 4px 0px 7px;
+        }
+    </style>
+</apex:page>

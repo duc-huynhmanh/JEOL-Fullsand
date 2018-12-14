@@ -1,0 +1,8 @@
+<apex:component >
+  <apex:attribute name="currencyData" description="Input currency/double data-type to be formatted" type="Double" required="true"/>
+  <apex:attribute name="addYenMark" description="Adds the '円' mark at the end of the formatted currency value" type="Boolean" required="true"/>
+  <!--<apex:outputText value="{0, number, ###,###,###,##0.00}"> -->
+  <apex:outputText value="{0, number, ###,###,###,###}">
+  	<apex:param value="{!currencyData}"/>
+  </apex:outputText><apex:outputText value=" 円" rendered="{!addYenMark}"/>
+ </apex:component>

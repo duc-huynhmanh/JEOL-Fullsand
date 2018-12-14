@@ -1,0 +1,904 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionOverrides>
+        <actionName>Accept</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>CancelEdit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Clone</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Delete</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Edit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Follow</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>List</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>New</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>SaveEdit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Tab</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>View</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <allowInChatterGroups>false</allowInChatterGroups>
+    <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
+    <deploymentStatus>Deployed</deploymentStatus>
+    <enableActivities>false</enableActivities>
+    <enableBulkApi>true</enableBulkApi>
+    <enableEnhancedLookup>true</enableEnhancedLookup>
+    <enableFeeds>false</enableFeeds>
+    <enableHistory>true</enableHistory>
+    <enableReports>true</enableReports>
+    <enableSearch>true</enableSearch>
+    <enableSharing>true</enableSharing>
+    <enableStreamingApi>true</enableStreamingApi>
+    <fields>
+        <fullName>Apply__c</fullName>
+        <externalId>false</externalId>
+        <label>本体区分</label>
+        <picklist>
+            <picklistValues>
+                <fullName>本体</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>ATT&apos;S</fullName>
+                <default>false</default>
+            </picklistValues>
+            <restrictedPicklist>true</restrictedPicklist>
+            <sorted>false</sorted>
+        </picklist>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>Division__c</fullName>
+        <externalId>false</externalId>
+        <label>区分</label>
+        <picklist>
+            <picklistValues>
+                <fullName>製品</fullName>
+                <default>true</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>パーツ</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>EnglishName__c</fullName>
+        <externalId>false</externalId>
+        <label>品目名（英名）</label>
+        <length>255</length>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>ExportBanned__c</fullName>
+        <externalId>false</externalId>
+        <formula>OR (SalesDivision__c == &apos;A03&apos;,
+    ServiceItemGroup__c == &apos;B01&apos;)</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>輸出禁止フラグ</label>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>GaibuID__c</fullName>
+        <caseSensitive>false</caseSensitive>
+        <externalId>true</externalId>
+        <label>品目（外部ID用）</label>
+        <length>255</length>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>true</unique>
+    </fields>
+    <fields>
+        <fullName>General_Model__c</fullName>
+        <externalId>false</externalId>
+        <label>統一機種名</label>
+        <length>100</length>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>HalfTextName__c</fullName>
+        <externalId>false</externalId>
+        <label>品名（半角）</label>
+        <length>255</length>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>HyozyunNoki__c</fullName>
+        <externalId>false</externalId>
+        <label>標準納期</label>
+        <precision>6</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>IsDisplayedAsiaSignal__c</fullName>
+        <externalId>false</externalId>
+        <formula>AND ( 
+NOT(ExportBanned__c), 
+Signal__c &lt;&gt; &quot;001&quot;, 
+Signal__c &lt;&gt; &quot;002&quot;, 
+Signal__c &lt;&gt; &quot;003&quot;, 
+Signal__c &lt;&gt; &quot;004&quot;, 
+Signal__c &lt;&gt; &quot;005&quot;, 
+Signal__c &lt;&gt; &quot;006&quot;, 
+Signal__c &lt;&gt; &quot;007&quot;, 
+Signal__c &lt;&gt; &quot;008&quot;
+)</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>IsDisplayedAsiaSignal</label>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>IsDisplayedAsia__c</fullName>
+        <externalId>false</externalId>
+        <formula>AND ( 
+OR ( 
+TEXT(Division__c) == &apos;製品&apos;, 
+TEXT(Division__c) == &apos;パーツ&apos; 
+), OR ( 
+ISNULL(ItemTypeFormula__c), 
+ItemTypeFormula__c == &quot;4&quot;, 
+AND( 
+NOT BEGINS(UPPER(Name), &quot;A&quot;), 
+NOT BEGINS(UPPER(Name), &quot;B&quot;), 
+NOT BEGINS(UPPER(Name), &quot;C&quot;), 
+NOT BEGINS(UPPER(Name), &quot;D&quot;), 
+NOT BEGINS(UPPER(Name), &quot;E&quot;), 
+NOT BEGINS(UPPER(Name), &quot;F&quot;), 
+NOT BEGINS(UPPER(Name), &quot;G&quot;), 
+NOT BEGINS(UPPER(Name), &quot;H&quot;), 
+NOT BEGINS(UPPER(Name), &quot;I&quot;), 
+NOT BEGINS(UPPER(Name), &quot;J&quot;), 
+NOT BEGINS(UPPER(Name), &quot;K&quot;), 
+NOT BEGINS(UPPER(Name), &quot;L&quot;), 
+NOT BEGINS(UPPER(Name), &quot;M&quot;), 
+NOT BEGINS(UPPER(Name), &quot;N&quot;), 
+NOT BEGINS(UPPER(Name), &quot;O&quot;), 
+NOT BEGINS(UPPER(Name), &quot;P&quot;), 
+NOT BEGINS(UPPER(Name), &quot;Q&quot;), 
+NOT BEGINS(UPPER(Name), &quot;R&quot;), 
+NOT BEGINS(UPPER(Name), &quot;S&quot;), 
+NOT BEGINS(UPPER(Name), &quot;T&quot;), 
+NOT BEGINS(UPPER(Name), &quot;U&quot;), 
+NOT BEGINS(UPPER(Name), &quot;V&quot;), 
+NOT BEGINS(UPPER(Name), &quot;W&quot;), 
+NOT BEGINS(UPPER(Name), &quot;X&quot;), 
+NOT BEGINS(UPPER(Name), &quot;Y&quot;), 
+NOT BEGINS(UPPER(Name), &quot;Z&quot;) 
+) 
+), 
+OR ( 
+ISPICKVAL(ProductItemType__c, &quot;1&quot;), 
+ISPICKVAL(ProductItemType__c, &quot;&quot;) 
+) 
+)</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>IsDisplayedAsia</label>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>IsDisplayedLocalSupply__c</fullName>
+        <externalId>false</externalId>
+        <formula>ISPICKVAL(ProductItemType__c, &quot;2&quot;)</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>IsDisplayedLocalSupply</label>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>IsDisplayed__c</fullName>
+        <externalId>false</externalId>
+        <formula>AND (
+   Signal__c &lt;&gt; &quot;001&quot;,
+   Signal__c &lt;&gt; &quot;005&quot;,
+   Signal__c &lt;&gt; &quot;006&quot;,
+   OR (
+      TEXT(Division__c) == &apos;製品&apos;,
+      TEXT(Division__c) == &apos;パーツ&apos;
+      ),   OR (
+      ISNULL(ItemTypeFormula__c),
+      ItemTypeFormula__c == &quot;4&quot;,
+      AND(
+         NOT BEGINS(UPPER(Name), &quot;A&quot;),
+         NOT BEGINS(UPPER(Name), &quot;B&quot;),
+         NOT BEGINS(UPPER(Name), &quot;C&quot;),
+         NOT BEGINS(UPPER(Name), &quot;D&quot;),
+         NOT BEGINS(UPPER(Name), &quot;E&quot;),
+         NOT BEGINS(UPPER(Name), &quot;F&quot;),
+         NOT BEGINS(UPPER(Name), &quot;G&quot;),
+         NOT BEGINS(UPPER(Name), &quot;H&quot;),
+         NOT BEGINS(UPPER(Name), &quot;I&quot;),
+         NOT BEGINS(UPPER(Name), &quot;J&quot;),
+         NOT BEGINS(UPPER(Name), &quot;K&quot;),
+         NOT BEGINS(UPPER(Name), &quot;L&quot;),
+         NOT BEGINS(UPPER(Name), &quot;M&quot;),
+         NOT BEGINS(UPPER(Name), &quot;N&quot;),
+         NOT BEGINS(UPPER(Name), &quot;O&quot;),
+         NOT BEGINS(UPPER(Name), &quot;P&quot;),
+         NOT BEGINS(UPPER(Name), &quot;Q&quot;),
+         NOT BEGINS(UPPER(Name), &quot;R&quot;),
+         NOT BEGINS(UPPER(Name), &quot;S&quot;),
+         NOT BEGINS(UPPER(Name), &quot;T&quot;),
+         NOT BEGINS(UPPER(Name), &quot;U&quot;),
+         NOT BEGINS(UPPER(Name), &quot;V&quot;),
+         NOT BEGINS(UPPER(Name), &quot;W&quot;),
+         NOT BEGINS(UPPER(Name), &quot;X&quot;),
+         NOT BEGINS(UPPER(Name), &quot;Y&quot;),
+         NOT BEGINS(UPPER(Name), &quot;Z&quot;)
+      )
+   ),
+   OR (
+      ISPICKVAL(ProductItemType__c, &quot;1&quot;),
+      ISPICKVAL(ProductItemType__c, &quot;&quot;)
+         ), 
+   ServiceItemGroup__c &lt;&gt; &apos;B01&apos; 
+)</formula>
+        <label>IsDisplayed</label>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>ItemLen__c</fullName>
+        <description>品目コードの文字数（Profile:System Adminのみ参照可能）</description>
+        <externalId>false</externalId>
+        <formula>Len(Name)</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>品目文字数</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>ItemTypeFormula__c</fullName>
+        <externalId>false</externalId>
+        <formula>IF(ISBLANK(TEXT(ItemTypeReal__c)) , TEXT(ItemType__c), TEXT(ItemTypeReal__c))</formula>
+        <label>ItemTypeFormula</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>ItemTypeReal__c</fullName>
+        <externalId>false</externalId>
+        <label>実際のタイプ</label>
+        <picklist>
+            <picklistValues>
+                <fullName>1</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>2</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>3</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>4</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>5</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>6</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>10</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>15</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>20</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>ItemType__c</fullName>
+        <externalId>false</externalId>
+        <label>タイプ</label>
+        <picklist>
+            <picklistValues>
+                <fullName>1</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>2</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>3</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>4</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>5</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>6</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>10</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>15</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>20</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>JapaneseName__c</fullName>
+        <externalId>false</externalId>
+        <label>品目名</label>
+        <length>255</length>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Kikaku__c</fullName>
+        <externalId>false</externalId>
+        <label>規格</label>
+        <length>255</length>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Meka__c</fullName>
+        <externalId>false</externalId>
+        <label>メーカー</label>
+        <length>255</length>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>ModelTypeDisplay__c</fullName>
+        <externalId>false</externalId>
+        <formula>IF( TEXT(Division__c) == &apos;パーツ&apos;, Name, ModelType__c)</formula>
+        <label>Model Type</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>ModelType__c</fullName>
+        <externalId>true</externalId>
+        <label>形式</label>
+        <length>255</length>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Model__c</fullName>
+        <externalId>false</externalId>
+        <label>機種</label>
+        <length>255</length>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>ProductItemType__c</fullName>
+        <description>NULL, 1: Normal
+2: Local Supply</description>
+        <externalId>false</externalId>
+        <label>Product Item Type</label>
+        <picklist>
+            <picklistValues>
+                <fullName>1</fullName>
+                <default>true</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>2</fullName>
+                <default>false</default>
+            </picklistValues>
+            <restrictedPicklist>true</restrictedPicklist>
+            <sorted>false</sorted>
+        </picklist>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>SalesDivision__c</fullName>
+        <externalId>false</externalId>
+        <label>販売区分</label>
+        <length>3</length>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Series__c</fullName>
+        <externalId>false</externalId>
+        <label>系列</label>
+        <length>6</length>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>ServiceItemGroup__c</fullName>
+        <externalId>false</externalId>
+        <label>サービス品目グループ</label>
+        <length>6</length>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>ShireSakiCode__c</fullName>
+        <externalId>false</externalId>
+        <label>仕入先</label>
+        <length>9</length>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>ShiyoKishu__c</fullName>
+        <externalId>false</externalId>
+        <label>使用機種</label>
+        <length>255</length>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>ShukkaStatusName__c</fullName>
+        <externalId>false</externalId>
+        <label>仕入先名称</label>
+        <length>255</length>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Signal__c</fullName>
+        <externalId>false</externalId>
+        <label>品目シグナル</label>
+        <length>3</length>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Soko__c</fullName>
+        <externalId>false</externalId>
+        <label>倉庫</label>
+        <length>255</length>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Supplier__c</fullName>
+        <externalId>false</externalId>
+        <label>Supplier</label>
+        <length>255</length>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Tani__c</fullName>
+        <externalId>false</externalId>
+        <label>単位</label>
+        <length>3</length>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>UnitPrice__c</fullName>
+        <externalId>false</externalId>
+        <label>単価</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Currency</type>
+    </fields>
+    <fields>
+        <fullName>ZaikoKanriKubun__c</fullName>
+        <externalId>false</externalId>
+        <label>在庫管理区分</label>
+        <length>255</length>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <label>品目</label>
+    <listViews>
+        <fullName>AL</fullName>
+        <columns>Series__c</columns>
+        <columns>NAME</columns>
+        <columns>JapaneseName__c</columns>
+        <columns>EnglishName__c</columns>
+        <columns>HalfTextName__c</columns>
+        <columns>Tani__c</columns>
+        <columns>UnitPrice__c</columns>
+        <columns>CURRENCY_ISO_CODE</columns>
+        <columns>CREATED_DATE</columns>
+        <columns>LAST_UPDATE</columns>
+        <filterScope>Everything</filterScope>
+        <filters>
+            <field>NAME</field>
+            <operation>equals</operation>
+            <value>384062</value>
+        </filters>
+        <label>個別品目　AL</label>
+        <language>ja</language>
+    </listViews>
+    <listViews>
+        <fullName>LS_view</fullName>
+        <columns>GaibuID__c</columns>
+        <columns>NAME</columns>
+        <columns>Supplier__c</columns>
+        <columns>EnglishName__c</columns>
+        <columns>ProductItemType__c</columns>
+        <columns>IsDisplayedLocalSupply__c</columns>
+        <filterScope>Everything</filterScope>
+        <filters>
+            <field>ProductItemType__c</field>
+            <operation>equals</operation>
+            <value>2</value>
+        </filters>
+        <label>LS Item</label>
+        <language>ja</language>
+        <sharedTo>
+            <group>IT_Infomation_System_G</group>
+            <group>JEOL_Asia_Master_Edit</group>
+        </sharedTo>
+    </listViews>
+    <listViews>
+        <fullName>ProductCatalog_Item</fullName>
+        <booleanFilter>1 and (2 and 3) or 4</booleanFilter>
+        <columns>Apply__c</columns>
+        <columns>NAME</columns>
+        <columns>Division__c</columns>
+        <columns>ShiyoKishu__c</columns>
+        <columns>Model__c</columns>
+        <columns>Kikaku__c</columns>
+        <columns>ModelType__c</columns>
+        <columns>JapaneseName__c</columns>
+        <columns>UnitPrice__c</columns>
+        <columns>Tani__c</columns>
+        <columns>ItemTypeReal__c</columns>
+        <columns>UPDATEDBY_USER</columns>
+        <columns>ProductItemType__c</columns>
+        <columns>ItemTypeFormula__c</columns>
+        <columns>GaibuID__c</columns>
+        <filterScope>Everything</filterScope>
+        <filters>
+            <field>ProductItemType__c</field>
+            <operation>notEqual</operation>
+            <value>2</value>
+        </filters>
+        <filters>
+            <field>NAME</field>
+            <operation>lessOrEqual</operation>
+            <value>999999999</value>
+        </filters>
+        <filters>
+            <field>NAME</field>
+            <operation>startsWith</operation>
+            <value>8</value>
+        </filters>
+        <filters>
+            <field>NAME</field>
+            <operation>lessOrEqual</operation>
+            <value>999999</value>
+        </filters>
+        <label>品目カタログ再設定用品目</label>
+        <language>ja</language>
+    </listViews>
+    <listViews>
+        <fullName>View1</fullName>
+        <columns>Series__c</columns>
+        <columns>NAME</columns>
+        <columns>JapaneseName__c</columns>
+        <columns>EnglishName__c</columns>
+        <columns>HalfTextName__c</columns>
+        <columns>Tani__c</columns>
+        <columns>UnitPrice__c</columns>
+        <columns>CURRENCY_ISO_CODE</columns>
+        <columns>CREATED_DATE</columns>
+        <columns>LAST_UPDATE</columns>
+        <filterScope>Everything</filterScope>
+        <filters>
+            <field>NAME</field>
+            <operation>equals</operation>
+            <value>384062</value>
+        </filters>
+        <label>個別品目</label>
+        <language>ja</language>
+    </listViews>
+    <listViews>
+        <fullName>View3</fullName>
+        <columns>Series__c</columns>
+        <columns>General_Model__c</columns>
+        <columns>NAME</columns>
+        <columns>ModelType__c</columns>
+        <columns>JapaneseName__c</columns>
+        <columns>UnitPrice__c</columns>
+        <columns>Tani__c</columns>
+        <columns>Apply__c</columns>
+        <columns>ItemTypeReal__c</columns>
+        <columns>ShiyoKishu__c</columns>
+        <filterScope>Everything</filterScope>
+        <filters>
+            <field>Apply__c</field>
+            <operation>notEqual</operation>
+        </filters>
+        <label>品目確認（適用）</label>
+        <language>ja</language>
+    </listViews>
+    <listViews>
+        <fullName>View4</fullName>
+        <columns>Series__c</columns>
+        <columns>General_Model__c</columns>
+        <columns>Apply__c</columns>
+        <columns>NAME</columns>
+        <columns>Division__c</columns>
+        <columns>ShiyoKishu__c</columns>
+        <columns>Model__c</columns>
+        <columns>Kikaku__c</columns>
+        <columns>ModelType__c</columns>
+        <columns>JapaneseName__c</columns>
+        <columns>UnitPrice__c</columns>
+        <columns>Tani__c</columns>
+        <columns>ItemTypeReal__c</columns>
+        <columns>UPDATEDBY_USER</columns>
+        <filterScope>Everything</filterScope>
+        <filters>
+            <field>Apply__c</field>
+            <operation>equals</operation>
+        </filters>
+        <label>品目確認（未登録）</label>
+        <language>ja</language>
+    </listViews>
+    <listViews>
+        <fullName>View5</fullName>
+        <columns>Apply__c</columns>
+        <columns>NAME</columns>
+        <columns>Division__c</columns>
+        <columns>ShiyoKishu__c</columns>
+        <columns>Model__c</columns>
+        <columns>Kikaku__c</columns>
+        <columns>ModelType__c</columns>
+        <columns>JapaneseName__c</columns>
+        <columns>UnitPrice__c</columns>
+        <columns>Tani__c</columns>
+        <columns>ItemTypeReal__c</columns>
+        <columns>UPDATEDBY_USER</columns>
+        <columns>ProductItemType__c</columns>
+        <columns>ItemTypeFormula__c</columns>
+        <columns>GaibuID__c</columns>
+        <filterScope>Everything</filterScope>
+        <label>すべての品目</label>
+        <language>ja</language>
+    </listViews>
+    <listViews>
+        <fullName>View_seiban</fullName>
+        <columns>NAME</columns>
+        <columns>CREATED_DATE</columns>
+        <columns>LAST_UPDATE</columns>
+        <columns>ServiceItemGroup__c</columns>
+        <filterScope>Everything</filterScope>
+        <filters>
+            <field>ItemLen__c</field>
+            <operation>greaterThan</operation>
+            <value>11</value>
+        </filters>
+        <label>製番品調査</label>
+        <language>ja</language>
+        <sharedTo>
+            <group>IT_Infomation_System_G</group>
+        </sharedTo>
+    </listViews>
+    <listViews>
+        <fullName>itemLEN24over</fullName>
+        <columns>ItemLen__c</columns>
+        <columns>NAME</columns>
+        <columns>Model__c</columns>
+        <columns>Kikaku__c</columns>
+        <columns>ShiyoKishu__c</columns>
+        <columns>HalfTextName__c</columns>
+        <columns>EnglishName__c</columns>
+        <columns>ProductItemType__c</columns>
+        <filterScope>Everything</filterScope>
+        <filters>
+            <field>ItemLen__c</field>
+            <operation>greaterOrEqual</operation>
+            <value>24</value>
+        </filters>
+        <filters>
+            <field>ProductItemType__c</field>
+            <operation>equals</operation>
+            <value>1</value>
+        </filters>
+        <label>品目№長さ24以上</label>
+        <language>ja</language>
+        <sharedTo>
+            <group>IT_Infomation_System_G</group>
+        </sharedTo>
+    </listViews>
+    <nameField>
+        <label>品目</label>
+        <trackHistory>false</trackHistory>
+        <type>Text</type>
+    </nameField>
+    <searchLayouts>
+        <customTabListAdditionalFields>ModelType__c</customTabListAdditionalFields>
+        <customTabListAdditionalFields>Series__c</customTabListAdditionalFields>
+        <customTabListAdditionalFields>JapaneseName__c</customTabListAdditionalFields>
+        <customTabListAdditionalFields>EnglishName__c</customTabListAdditionalFields>
+        <lookupDialogsAdditionalFields>ModelType__c</lookupDialogsAdditionalFields>
+        <lookupDialogsAdditionalFields>Series__c</lookupDialogsAdditionalFields>
+        <lookupDialogsAdditionalFields>EnglishName__c</lookupDialogsAdditionalFields>
+        <lookupDialogsAdditionalFields>JapaneseName__c</lookupDialogsAdditionalFields>
+        <lookupFilterFields>NAME</lookupFilterFields>
+        <lookupFilterFields>ModelType__c</lookupFilterFields>
+        <lookupFilterFields>Series__c</lookupFilterFields>
+        <lookupFilterFields>EnglishName__c</lookupFilterFields>
+        <lookupFilterFields>JapaneseName__c</lookupFilterFields>
+        <searchFilterFields>NAME</searchFilterFields>
+        <searchFilterFields>Series__c</searchFilterFields>
+        <searchFilterFields>ModelType__c</searchFilterFields>
+        <searchResultsAdditionalFields>Series__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>Model__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>ModelType__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>JapaneseName__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>EnglishName__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>Tani__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>UnitPrice__c</searchResultsAdditionalFields>
+    </searchLayouts>
+    <sharingModel>Read</sharingModel>
+    <validationRules>
+        <fullName>VRtmp_Type2</fullName>
+        <active>true</active>
+        <errorConditionFormula>AND(
+$Profile.Id = &quot;00e5F000000Slor&quot;,
+OR(
+  ISBLANK(TEXT(ProductItemType__c)),
+  TEXT(ProductItemType__c)&lt;&gt;&quot;2&quot;
+)
+)</errorConditionFormula>
+        <errorDisplayField>ProductItemType__c</errorDisplayField>
+        <errorMessage>Item Type should be equal to &quot;2&quot;</errorMessage>
+    </validationRules>
+</CustomObject>

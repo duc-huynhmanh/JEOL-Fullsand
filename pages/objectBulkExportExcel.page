@@ -1,0 +1,20 @@
+<apex:page id="objectBulkExportExcel" title="データ一括出力" label="データ一括出力" controller="objectBulkUpdateController" contenttype="application/vnd.ms-excel;charset=UTF-8#Export_{!dto.objKey}.xls" cache="true">
+    <table>
+        <thead>
+            <tr>
+                <apex:repeat value="{!dto.fieldKeys}" var="field">
+                    <th>{!dto.fieldNames[field]}</th>
+                </apex:repeat>
+            </tr>
+        </thead>
+        <tbody>
+            <apex:repeat value="{!resultListChecked}" var="o">
+                <tr>
+                    <apex:repeat value="{!dto.fieldKeys}" var="field">
+                        <td>{!o[field]}</td>
+                    </apex:repeat>
+                </tr>
+            </apex:repeat>
+        </tbody>
+    </table>
+</apex:page>

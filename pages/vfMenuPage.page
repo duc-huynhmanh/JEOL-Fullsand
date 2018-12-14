@@ -1,0 +1,49 @@
+<apex:page controller="clsMenuControl" showHeader="{!ShowHeader}" sidebar="{!ShowSideBar}">
+<html>
+<head>
+<!-- StyleSheet -->
+    <apex:include pageName="{!MenuStyle}"/>
+    <apex:include pageName="vfMenuChatterBlockCss"/>
+</head>
+<body>
+    <apex:composition template="vfMenuTemplate">
+        <apex:define name="menuBody">
+            <apex:repeat value="{!MenuKeys}" var="section">
+                <p>{!section}</p>
+                <ul>
+                    <apex:repeat value="{!MenuLists[section]}" var="item">
+                        <li class="{!CASE(item.NumberOfCols, '1列', 'type1', '2列', 'type2', '3列', 'type3', '4列', 'type4', '5列', 'type5', '')} {!CASE(item.FontSize, '大大', 'font1', '大中', 'font2', '大小', 'font3', '小大', 'font4', '小中', 'font5', '小小', 'font6', '')}"><a href="#" onClick="gotoPage('{!item.Link}', '{!item.Target}'); return false;">
+                                <apex:image url="/servlet/servlet.ImageServer?id={!item.IconID}&oid={!$Organization.Id}"/>
+                                <div><div><apex:outputText value="{!item.ItemTitle}" /></div></div>
+                            </a>
+                        </li>
+                    </apex:repeat>
+                </ul>
+            </apex:repeat>
+        </apex:define>
+        
+        <apex:define name="chatterFeed">
+            <apex:outputPanel rendered="{!showChatter}">
+                <div id="chatterBlock" style="{!IF($User.UITheme == 'Theme3' || $User.UITheme == 'Theme4d' || $User.UITheme == 'Theme4t', '', 'display:none;')}">
+                <!--
+                <div id="chatterBlock" style="{!IF($User.UITheme == 'Theme3', '', 'display:none;')}">
+-->
+                    <div class="openChatterBlock">
+                        <input id="openChatter" type="checkbox" name="check" value="c1" />
+                        <label for="checkbox1"><image src="/img/feeds/feed16.png" />&nbsp;<span id="textLabel">Chatterを表示</span></label>
+                    </div>
+                    <div class="chatterFeedBlock">
+                        <chatter:newsfeed />
+                    </div>
+                </div>
+            </apex:outputPanel>
+        </apex:define>
+        <!--
+        <apex:define name="chatterFeed">
+            <chatter:newsfeed />
+        </apex:define>
+        -->
+    </apex:composition>
+</body>
+</html>
+</apex:page>

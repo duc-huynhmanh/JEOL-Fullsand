@@ -1,0 +1,3 @@
+<apex:page standardcontroller="MaintenanceAccountBook__c" extensions="JEOL_MaintenanceAccountBookRedirect_ctrl" action="{!redirect}" >
+  <h1>管理台帳作成ボタンを使ってください。</h1>
+</apex:page>
