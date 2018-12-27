@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionOverrides>
+        <actionName>Accept</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>CancelEdit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Clone</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Delete</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Edit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Follow</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>List</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>New</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>SaveEdit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Tab</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>View</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <allowInChatterGroups>false</allowInChatterGroups>
+    <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
+    <deploymentStatus>Deployed</deploymentStatus>
+    <enableActivities>false</enableActivities>
+    <enableBulkApi>true</enableBulkApi>
+    <enableFeeds>false</enableFeeds>
+    <enableHistory>false</enableHistory>
+    <enableReports>false</enableReports>
+    <enableSearch>true</enableSearch>
+    <enableSharing>true</enableSharing>
+    <enableStreamingApi>true</enableStreamingApi>
+    <fields>
+        <fullName>Country_Group__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <externalId>false</externalId>
+        <label>Country Group</label>
+        <referenceTo>Country_Group__c</referenceTo>
+        <relationshipLabel>(Demo) Sharing Rule</relationshipLabel>
+        <relationshipName>Demo_Sharing_Rule</relationshipName>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>Country__c</fullName>
+        <externalId>false</externalId>
+        <label>Country</label>
+        <length>255</length>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Series_Group__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <externalId>false</externalId>
+        <label>Series Group</label>
+        <referenceTo>SeriesGroup__c</referenceTo>
+        <relationshipLabel>(Demo) Sharing Rule</relationshipLabel>
+        <relationshipName>Demo_Sharing_Rule</relationshipName>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>Series__c</fullName>
+        <externalId>false</externalId>
+        <label>Series</label>
+        <length>255</length>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>User__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <externalId>false</externalId>
+        <label>User</label>
+        <referenceTo>User</referenceTo>
+        <relationshipName>Demo_Sharing_Rule</relationshipName>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <label>(Demo) Sharing Rule</label>
+    <listViews>
+        <fullName>All</fullName>
+        <filterScope>Everything</filterScope>
+        <label>All</label>
+    </listViews>
+    <nameField>
+        <displayFormat>Sh-{000}</displayFormat>
+        <label>(Demo) Sharing Rule Name</label>
+        <type>AutoNumber</type>
+    </nameField>
+    <searchLayouts>
+        <listViewButtons>Refresh_Sharing</listViewButtons>
+    </searchLayouts>
+    <sharingModel>ReadWrite</sharingModel>
+    <webLinks>
+        <fullName>Refresh_Sharing</fullName>
+        <availability>online</availability>
+        <displayType>massActionButton</displayType>
+        <linkType>javascript</linkType>
+        <masterLabel>Refresh Sharing</masterLabel>
+        <openType>onClickJavaScript</openType>
+        <protected>false</protected>
+        <requireRowSelection>false</requireRowSelection>
+        <url>{!REQUIRESCRIPT(&apos;//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js&apos;)} 
+
+{!REQUIRESCRIPT(&apos;//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js&apos;)} 
+
+jQuery(function() { 
+
+jQuery(&apos;head&apos;).append(&apos;&lt;link rel=&quot;stylesheet&quot; href=&quot;//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/start/jquery-ui.css&quot; type=&quot;text/css&quot; /&gt;&apos;); 
+
+var html = 
+
+&apos;&lt;div id=&quot;dialog&quot; title=&quot;Sharing&quot;&gt;&lt;iframe id=&quot;iframeId&quot; width=&quot;100%&quot; height=&quot;300&quot; frameborder=&quot;0&quot;&gt;&lt;/iframe&gt;&lt;/div&gt;&apos;; 
+
+
+if(!jQuery(&apos;[id=dialog]&apos;).size()){ 
+jQuery(&apos;body&apos;).append(html);
+} 
+
+/*Open the jQuery Dialog.*/ 
+
+jQuery( &quot;#dialog&quot; ).dialog({ 
+
+bgiframe: true, 
+
+autoOpen: true, 
+
+resizable: false, 
+
+minWidth: 700, 
+
+Width: 750, 
+
+Height: 250, 
+
+modal: true, 
+
+open: function() {
+   var iframe = document.getElementById(&apos;iframeId&apos;);
+   iframe.src = &apos;/apex/JEOLAsia_RefreshSharing&apos;;
+       },
+
+close: function( event, ui ) {
+   var iframe = document.getElementById(&apos;iframeId&apos;);
+   iframe.src = &apos;&apos;;
+  }
+}); 
+
+});</url>
+    </webLinks>
+</CustomObject>
